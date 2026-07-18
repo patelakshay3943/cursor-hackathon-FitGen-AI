@@ -50,7 +50,7 @@ export function resolveExpectedFamily(
 ): MovementFamily {
   const h = `${exerciseId} ${name ?? ""}`.toLowerCase();
 
-  if (/push[-_ ]?up|pushup|press[-_ ]?up/.test(h)) return "pushup";
+  if (/push[-_ ]?up|pushup|press[-_ ]?up|\bplank\b/.test(h)) return "pushup";
   if (/lunge|split[-_ ]squat|bulgarian/.test(h)) return "lunge";
   if (/squat|goblet/.test(h)) return "squat";
   if (/bicep|hammer_curl|barbell_curl|dumbbell_curl|\bcurl\b/.test(h)) {
@@ -78,6 +78,7 @@ export function resolveExpectedFamily(
     return "press";
   }
   if (/plank|crunch|sit[-_ ]?up|leg[-_ ]raise|mountain[-_ ]climber/.test(h)) {
+    if (/\bplank\b/.test(h)) return "pushup";
     return "generic";
   }
   return "generic";

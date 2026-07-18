@@ -20,6 +20,7 @@ export function ExerciseCard({ exercise, index = 0, planId }: ExerciseCardProps)
     name: exercise.name,
     sets: exercise.sets,
     reps: exercise.reps,
+    restSec: exercise.restSec,
     planId,
   });
 
