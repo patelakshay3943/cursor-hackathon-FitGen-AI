@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiPost } from "@/shared/services/http";
+import { savePlanIdToSession, saveProfile } from "@/shared/lib/sessionPerson";
 import type { PlanResponse, UserProfile } from "../types";
 import { savePlanId } from "../types";
 
@@ -20,8 +21,10 @@ export function useGeneratePlan() {
         setStep("Filtering exercises from database…");
         await new Promise((r) => setTimeout(r, 150));
         setStep("Cursor AI is building Day 1…");
+        saveProfile(profile);
         const result = await apiPost<PlanResponse>("/api/plans/generate", profile);
         savePlanId(result.planId);
+        savePlanIdToSession(result.planId);
         setStep("Day 1 ready!");
         router.push(`/plan/${result.planId}`);
         return result;
