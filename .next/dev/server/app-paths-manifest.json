@@ -1,8 +1,4 @@
 {
-  "/api/coach/live/route": "app/api/coach/live/route.js",
-  "/api/plans/[id]/route": "app/api/plans/[id]/route.js",
-  "/api/plans/generate/route": "app/api/plans/generate/route.js",
   "/generate/page": "app/generate/page.js",
-  "/plan/[id]/page": "app/plan/[id]/page.js",
   "/track/[exerciseId]/page": "app/track/[exerciseId]/page.js"
 }

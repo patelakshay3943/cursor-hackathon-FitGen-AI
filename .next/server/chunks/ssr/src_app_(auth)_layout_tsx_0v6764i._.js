@@ -1,3 +1,0 @@
-module.exports=[90430,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsx)("div",{className:"flex flex-1 flex-col items-center justify-center px-4 py-12",children:(0,b.jsx)("div",{className:"w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900",children:a})})}])},67782,a=>{a.n(a.i(90430))}];
-
-//# sourceMappingURL=src_app_%28auth%29_layout_tsx_0v6764i._.js.map
