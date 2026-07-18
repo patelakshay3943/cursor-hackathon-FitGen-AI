@@ -1,0 +1,13 @@
+{
+  "pages": {
+    "/_app": []
+  },
+  "devFiles": [],
+  "polyfillFiles": [],
+  "lowPriorityFiles": [
+    "static/P90_IqUZ-rHN9scinRIAx/_buildManifest.js",
+    "static/P90_IqUZ-rHN9scinRIAx/_ssgManifest.js",
+    "static/P90_IqUZ-rHN9scinRIAx/_clientMiddlewareManifest.js"
+  ],
+  "rootMainFiles": []
+}

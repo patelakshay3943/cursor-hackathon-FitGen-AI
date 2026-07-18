@@ -1,0 +1,7 @@
+1:"$Sreact.fragment"
+2:I[44266,["/_next/static/chunks/0lo__vip6ec1_.js","/_next/static/chunks/0ax4oq4oemb49.js","/_next/static/chunks/0d3shmwh5_nmn.js","/_next/static/chunks/0_wafx4b2xgar.js"],"LoginForm"]
+3:I[22016,["/_next/static/chunks/0lo__vip6ec1_.js","/_next/static/chunks/0ax4oq4oemb49.js","/_next/static/chunks/0d3shmwh5_nmn.js","/_next/static/chunks/0_wafx4b2xgar.js"],""]
+4:I[97367,["/_next/static/chunks/0lo__vip6ec1_.js","/_next/static/chunks/0ax4oq4oemb49.js","/_next/static/chunks/0d3shmwh5_nmn.js"],"OutletBoundary"]
+5:"$Sreact.suspense"
+0:{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"flex flex-col gap-6","children":[["$","div",null,{"children":[["$","h1",null,{"className":"text-xl font-semibold text-zinc-900 dark:text-zinc-50","children":"Log in"}],["$","p",null,{"className":"mt-1 text-sm text-zinc-600 dark:text-zinc-400","children":"Static mock — any non-empty email/password works."}]]}],["$","$L2",null,{}],["$","p",null,{"className":"text-center text-sm text-zinc-600 dark:text-zinc-400","children":["No account?"," ",["$","$L3",null,{"href":"/register","className":"font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100","children":"Register"}]]}]]}],[["$","script","script-0",{"src":"/_next/static/chunks/0_wafx4b2xgar.js","async":true}]],["$","$L4",null,{"children":["$","$5",null,{"name":"Next.MetadataOutlet","children":"$@6"}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"P90_IqUZ-rHN9scinRIAx"}
+6:null

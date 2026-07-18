@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///home/nyusoft/Desktop/Cursor_Hackathon/cursor-hackathon-FitGen-AI/src/app/%28auth%29/layout.tsx"],"sourcesContent":["import type { ReactNode } from \"react\";\n\nexport default function AuthLayout({ children }: Readonly<{ children: ReactNode }>) {\n  return (\n    <div className=\"flex flex-1 flex-col items-center justify-center px-4 py-12\">\n      <div className=\"w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900\">\n        {children}\n      </div>\n    </div>\n  );\n}\n"],"names":["AuthLayout","children","className"],"mappings":";;;;;;AAEe,SAASA,WAAW,EAAEC,QAAQ,EAAqC;IAChF,qBACE,8OAAC;QAAIC,WAAU;kBACb,cAAA,8OAAC;YAAIA,WAAU;sBACZD;;;;;;;;;;;AAIT"}}]
+}

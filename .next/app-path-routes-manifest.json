@@ -1,0 +1,11 @@
+{
+  "/(auth)/login/page": "/login",
+  "/(auth)/register/page": "/register",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/welcome/route": "/api/welcome",
+  "/favicon.ico/route": "/favicon.ico",
+  "/orders/page": "/orders",
+  "/page": "/",
+  "/products/page": "/products"
+}
