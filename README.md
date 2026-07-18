@@ -1,0 +1,1 @@
+# cursor-hackathon-FitGen-AI
