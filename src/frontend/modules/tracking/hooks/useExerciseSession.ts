@@ -209,7 +209,7 @@ export function useExerciseSession(params: {
   );
 
   const formScore = useMemo(() => {
-    if (formTotal === 0) return 100;
+    if (formTotal === 0) return 0;
     return Math.round((formHits / formTotal) * 100);
   }, [formHits, formTotal]);
 
@@ -258,7 +258,7 @@ export function useExerciseSession(params: {
     mistakes,
     cue:
       lastResult?.cues[0] ??
-      (calibrated ? "Looking good — keep going" : "Get fully in frame"),
+      (calibrated ? "You're doing fine — keep going" : "Get fully in frame"),
     phase: lastResult?.phase ?? "idle",
     metrics: lastResult?.metrics ?? {},
     calibrated,

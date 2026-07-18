@@ -1,4 +1,5 @@
 import type { SessionStats } from "../hooks/useExerciseSession";
+import { getTotalReps, isEarlyQuitSession } from "./sessionOutcome";
 
 export type SessionReview = {
   strengths: string[];
@@ -9,30 +10,62 @@ export type SessionReview = {
 const WRONG_MOVE_RE =
   /looks like|switch to|instead|push-up|wrong|hang and pull/i;
 
+function buildEarlyQuitReview(
+  stats: SessionStats,
+  exerciseName: string,
+): SessionReview {
+  const strengths = [
+    "You opened the workout and stepped in — that still takes intention",
+  ];
+
+  const improvements: string[] = [];
+  if (stats.elapsedSec >= 30) {
+    improvements.push(
+      "You spent time on setup — next session, aim for one slow rep in frame to get started",
+    );
+  } else {
+    improvements.push(
+      "When you're ready, try one rep in frame — that's enough to begin",
+    );
+  }
+  improvements.push(
+    `Target is ${stats.targetSets}×${stats.targetReps} on ${exerciseName} — no rush, start small`,
+  );
+
+  return {
+    headline: "Session ended early — no reps logged yet",
+    strengths,
+    improvements,
+  };
+}
+
 /** Build post-session coach review from tracked stats. */
 export function buildSessionReview(
   stats: SessionStats,
   exerciseName: string,
 ): SessionReview {
+  if (isEarlyQuitSession(stats)) {
+    return buildEarlyQuitReview(stats, exerciseName);
+  }
+
   const strengths: string[] = [];
   const improvements: string[] = [];
-  const totalReps =
-    stats.totalReps ||
-    stats.setsCompleted * stats.targetReps + stats.reps;
+  const totalReps = getTotalReps(stats);
   const targetVolume = stats.targetSets * stats.targetReps;
   const volumePct =
     targetVolume > 0 ? Math.round((totalReps / targetVolume) * 100) : 0;
+  const hasFormSamples = stats.formScore > 0 && totalReps > 0;
 
   const uniqueMistakes = [...new Set(stats.mistakes)].slice(0, 5);
   const wrongMoveAlerts = uniqueMistakes.filter((m) => WRONG_MOVE_RE.test(m));
   const hasWrongMove = wrongMoveAlerts.length > 0;
 
-  // Never praise "perfect form" when the session flagged wrong exercises
-  if (!hasWrongMove && stats.formScore >= 80) {
+  // Never praise form without logged reps — score can be misleading at 0 reps
+  if (!hasWrongMove && hasFormSamples && stats.formScore >= 80) {
     strengths.push(
       `Strong overall form — scored ${stats.formScore}% across the session`,
     );
-  } else if (!hasWrongMove && stats.formScore >= 60) {
+  } else if (!hasWrongMove && hasFormSamples && stats.formScore >= 60) {
     strengths.push(
       `Decent control — form held around ${stats.formScore}% for ${exerciseName}`,
     );
@@ -61,11 +94,21 @@ export function buildSessionReview(
     );
   }
 
-  if (stats.elapsedSec >= 60 && stats.formScore >= 55 && !hasWrongMove) {
+  if (
+    stats.elapsedSec >= 60 &&
+    stats.formScore >= 55 &&
+    !hasWrongMove &&
+    totalReps > 0
+  ) {
     strengths.push("Stayed with the session long enough to build a rhythm");
   }
 
-  if (!hasWrongMove && stats.mistakes.length === 0 && stats.formScore >= 70) {
+  if (
+    !hasWrongMove &&
+    stats.mistakes.length === 0 &&
+    hasFormSamples &&
+    stats.formScore >= 70
+  ) {
     strengths.push("No major wrong-move alerts — movement matched the exercise");
   }
 
@@ -79,24 +122,29 @@ export function buildSessionReview(
     );
   }
 
-  if (!hasWrongMove && stats.formScore < 60) {
+  if (!hasWrongMove && totalReps > 0 && stats.formScore < 60) {
     improvements.push(
       `Form score was ${stats.formScore}% — slow down and hit full range each rep`,
     );
-  } else if (!hasWrongMove && stats.formScore < 75 && uniqueMistakes.length === 0) {
+  } else if (
+    !hasWrongMove &&
+    totalReps > 0 &&
+    stats.formScore < 75 &&
+    uniqueMistakes.length === 0
+  ) {
     improvements.push(
       "Tighten setup and lockout consistency to push form above 75%",
     );
   }
 
-  if (volumePct < 70 && targetVolume > 0) {
+  if (volumePct < 70 && targetVolume > 0 && totalReps > 0) {
     improvements.push(
       `Volume short of target (${totalReps}/${targetVolume} reps) — aim for all ${stats.targetSets}×${stats.targetReps} next time`,
     );
   }
 
   if (strengths.length === 0) {
-    strengths.push("You showed up and finished the session — that’s the first win");
+    strengths.push("You showed up and finished the session — that's the first win");
   }
 
   if (improvements.length === 0) {
@@ -105,12 +153,12 @@ export function buildSessionReview(
     );
   }
 
-  let headline = "Session wrapped — here’s your coach review";
+  let headline = "Session wrapped — here's your coach review";
   if (hasWrongMove) {
     headline = `Session done — camera often saw a different move than ${exerciseName}`;
   } else if (stats.formScore >= 80 && volumePct >= 80) {
     headline = "Strong session — form and volume both looked good";
-  } else if (stats.formScore < 55) {
+  } else if (totalReps > 0 && stats.formScore < 55) {
     headline = "Session done — focus next time on matching the exercise cleanly";
   } else if (uniqueMistakes.length >= 2) {
     headline = "Session done — a few form fixes will unlock cleaner reps";

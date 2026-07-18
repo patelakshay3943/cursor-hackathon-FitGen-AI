@@ -16,6 +16,7 @@ import {
   buildPreWorkoutAffirmation,
   type PostWorkoutAppreciation,
 } from "../lib/buildAppreciation";
+import { getKeepGoingLine, getMotivationLine } from "../lib/affirmations";
 import {
   getProfileFromSession,
   getShowUpCount,
@@ -116,6 +117,13 @@ export function MotionTracker({
     formOk: stats.formOk,
   });
 
+  const liveEncouragement = useMemo(
+    () => getKeepGoingLine(stats.totalReps + stats.setsCompleted),
+    [stats.totalReps, stats.setsCompleted],
+  );
+  const showLiveEncouragement =
+    ready && stats.calibrated && stats.formOk && !isWrong && stats.counting;
+
   useEffect(() => {
     if (!finished) return;
 
@@ -127,6 +135,10 @@ export function MotionTracker({
       showUpCount,
     );
     setAppreciation(appreciationResult);
+
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([40, 60, 40]);
+    }
 
     const totalReps =
       stats.totalReps || stats.setsCompleted * stats.targetReps + stats.reps;
@@ -212,6 +224,9 @@ export function MotionTracker({
             </p>
           </div>
         ) : null}
+        <p className="rounded-xl bg-[var(--fit-accent-soft)]/60 px-4 py-3 text-sm font-medium leading-relaxed text-[var(--fit-ink)]">
+          {pre.encouragementLine}
+        </p>
         <p className="text-sm text-[var(--fit-muted)]">
           Workout #{pre.workoutNumber} this session · {exerciseName}
         </p>
@@ -245,23 +260,44 @@ export function MotionTracker({
     const praise =
       appreciation ??
       buildPostWorkoutAppreciation(getProfileFromSession(), stats, getShowUpCount());
+    const motivationLine = getMotivationLine(getProfileFromSession());
 
     return (
       <div className="mx-auto max-w-lg space-y-5 px-4 py-6 fit-fade-up max-md:min-h-[100dvh] max-md:bg-[var(--fit-bg)] md:rounded-[1.5rem] md:border md:border-[var(--fit-border)] md:bg-[var(--fit-surface)] md:p-6">
-        <div className="rounded-2xl border border-[var(--fit-accent)]/35 bg-gradient-to-br from-[var(--fit-accent-soft)] to-[var(--fit-surface)] px-5 py-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fit-accent)]">
+        <div className="fit-celebrate-card rounded-2xl border border-[var(--fit-accent)]/35 bg-gradient-to-br from-[var(--fit-accent-soft)] to-[var(--fit-surface)] px-5 py-6">
+          <p className="fit-fade-up text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fit-accent)]">
             You showed up for yourself
           </p>
-          <h1 className="mt-2 font-display text-2xl font-semibold leading-snug text-[var(--fit-ink)] sm:text-3xl">
+          <h1 className="fit-fade-up fit-delay-1 mt-2 font-display text-2xl font-semibold leading-snug text-[var(--fit-ink)] sm:text-3xl">
             {praise.title}
           </h1>
-          <p className="mt-4 text-base leading-relaxed text-[var(--fit-ink)]">
+          {praise.milestone ? (
+            <p className="fit-fade-up fit-delay-2 mt-3 text-sm font-medium leading-relaxed text-[var(--fit-accent)]">
+              {praise.milestone}
+            </p>
+          ) : null}
+          <p className="fit-fade-up fit-delay-2 mt-4 text-base leading-relaxed text-[var(--fit-ink)]">
             {praise.message}
           </p>
-          <p className="mt-4 text-sm font-medium text-[var(--fit-accent)]">{praise.footer}</p>
+          <p className="fit-fade-up fit-delay-3 mt-4 text-sm font-semibold leading-relaxed text-[var(--fit-ink)]">
+            {praise.encouragement}
+          </p>
+          {motivationLine ? (
+            <div className="fit-fade-up fit-delay-4 mt-4 rounded-xl border border-[var(--fit-accent)]/20 bg-white/40 px-4 py-3 dark:bg-black/20">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--fit-accent)]">
+                Remember your why
+              </p>
+              <p className="mt-1.5 text-sm italic leading-relaxed text-[var(--fit-ink)]">
+                &ldquo;{motivationLine}&rdquo;
+              </p>
+            </div>
+          ) : null}
+          <p className="fit-fade-up fit-delay-5 mt-4 text-sm font-medium text-[var(--fit-accent)]">
+            {praise.footer}
+          </p>
         </div>
 
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fit-muted)]">
+        <p className="fit-fade-up fit-delay-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fit-muted)]">
           Session details · {exerciseName}
           {review.loading ? " · generating coach notes…" : ""}
         </p>
@@ -423,6 +459,14 @@ export function MotionTracker({
             <span className="mt-1 block text-xs text-white/70">
               Allow camera access when prompted
             </span>
+          </div>
+        ) : null}
+
+        {showLiveEncouragement ? (
+          <div className="pointer-events-none absolute inset-x-3 top-[4.75rem] z-[8] flex justify-center md:inset-x-auto md:right-4 md:top-4 md:justify-end">
+            <p className="fit-fade-in max-w-[18rem] rounded-full border border-emerald-400/30 bg-emerald-500/20 px-3 py-1.5 text-center text-xs font-medium leading-snug text-emerald-50 backdrop-blur-md">
+              {liveEncouragement}
+            </p>
           </div>
         ) : null}
 

@@ -57,3 +57,29 @@ export function getMotivationLine(profile: UserProfile | null): string | null {
   if (!text) return null;
   return text;
 }
+
+const KEEP_GOING_LINES = [
+  "You're doing fine — keep going.",
+  "Steady and strong — you've got this.",
+  "One rep at a time — you're on the right track.",
+  "Trust the process — you're showing up, and that matters.",
+  "Keep breathing, keep moving — you're doing better than you think.",
+] as const;
+
+export function getKeepGoingLine(seed = 0): string {
+  const index = Math.abs(seed) % KEEP_GOING_LINES.length;
+  return KEEP_GOING_LINES[index];
+}
+
+const EARLY_QUIT_ENCOURAGEMENT = [
+  "You're doing fine — zero reps doesn't mean failure.",
+  "Some days are setup days. That's okay.",
+  "Pause, breathe, and come back when you're ready — we'll be here.",
+  "You're allowed to stop early. Trying still counts.",
+  "Keep going at your pace — there's no deadline on becoming better.",
+] as const;
+
+export function getEarlyQuitEncouragement(seed = 0): string {
+  const index = Math.abs(seed) % EARLY_QUIT_ENCOURAGEMENT.length;
+  return EARLY_QUIT_ENCOURAGEMENT[index];
+}

@@ -125,6 +125,7 @@ Write an accurate coach review:
 - headline: one sentence
 - strengths: 2–4 concrete positives (NEVER claim perfect/strong form if wrong-move alerts exist)
 - improvements: 2–4 concrete fixes (use alerts when relevant)
+- If totalReps is 0, do NOT praise form score, volume, or reps — acknowledge they showed up and suggest one gentle next step
 - If alerts say the athlete did a different exercise (e.g. push-up during Pullups), that MUST be the top improvement and you must NOT praise form score as strong
 - Sets completed 0 with some reps means the first set was incomplete — say that clearly
 
