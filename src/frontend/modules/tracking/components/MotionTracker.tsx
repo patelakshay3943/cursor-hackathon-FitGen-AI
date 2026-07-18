@@ -11,6 +11,16 @@ import { useLlmLiveCoach } from "../hooks/useLlmLiveCoach";
 import { TrackingOverlay } from "./TrackingOverlay";
 import { CoachPanel, deriveTone } from "./CoachPanel";
 import { buildSessionReview } from "../lib/sessionReview";
+import {
+  buildPostWorkoutAppreciation,
+  buildPreWorkoutAffirmation,
+  type PostWorkoutAppreciation,
+} from "../lib/buildAppreciation";
+import {
+  getProfileFromSession,
+  getShowUpCount,
+  recordWorkout,
+} from "@/shared/lib/sessionPerson";
 
 type MotionTrackerProps = {
   exerciseId: string;
@@ -41,9 +51,13 @@ export function MotionTracker({
   targetReps,
   backHref,
 }: MotionTrackerProps) {
-  const [sessionOn, setSessionOn] = useState(true);
+  const [sessionOn, setSessionOn] = useState(false);
+  const [whyReady, setWhyReady] = useState(false);
   const [finished, setFinished] = useState(false);
   const [summary, setSummary] = useState<SummaryState | null>(null);
+  const [appreciation, setAppreciation] = useState<PostWorkoutAppreciation | null>(
+    null,
+  );
 
   const tracker = useMemo(
     () => createTrackerForExercise(exerciseId, exerciseName),
@@ -105,6 +119,25 @@ export function MotionTracker({
   useEffect(() => {
     if (!finished) return;
 
+    const profile = getProfileFromSession();
+    const showUpCount = getShowUpCount() + 1;
+    const appreciationResult = buildPostWorkoutAppreciation(
+      profile,
+      stats,
+      showUpCount,
+    );
+    setAppreciation(appreciationResult);
+
+    const totalReps =
+      stats.totalReps || stats.setsCompleted * stats.targetReps + stats.reps;
+    recordWorkout({
+      exerciseName,
+      totalReps,
+      formScore: stats.formScore,
+      elapsedSec: stats.elapsedSec,
+      appreciation: appreciationResult.message,
+    });
+
     const fallback = buildSessionReview(stats, exerciseName);
     setSummary({
       headline: fallback.headline,
@@ -154,25 +187,83 @@ export function MotionTracker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
 
+  if (!whyReady) {
+    const pre = buildPreWorkoutAffirmation(getProfileFromSession(), getShowUpCount());
+
+    return (
+      <div className="mx-auto max-w-lg space-y-6 px-4 py-8 fit-fade-up max-md:min-h-[100dvh] max-md:bg-[var(--fit-bg)] md:rounded-[1.5rem] md:border md:border-[var(--fit-border)] md:bg-[var(--fit-surface)] md:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fit-accent)]">
+          You are here to become
+        </p>
+        <h1 className="font-display text-3xl font-semibold leading-tight text-[var(--fit-ink)] sm:text-4xl">
+          {pre.becoming}
+        </h1>
+        <p className="text-base leading-relaxed text-[var(--fit-muted)]">{pre.preLine}</p>
+        {pre.focusLine ? (
+          <p className="text-sm leading-relaxed text-[var(--fit-ink)]">{pre.focusLine}</p>
+        ) : null}
+        {pre.motivationLine ? (
+          <div className="rounded-2xl border border-[var(--fit-accent)]/25 bg-[var(--fit-accent-soft)] px-4 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--fit-accent)]">
+              Your why
+            </p>
+            <p className="mt-1.5 text-sm italic leading-relaxed text-[var(--fit-ink)]">
+              &ldquo;{pre.motivationLine}&rdquo;
+            </p>
+          </div>
+        ) : null}
+        <p className="text-sm text-[var(--fit-muted)]">
+          Workout #{pre.workoutNumber} this session · {exerciseName}
+        </p>
+        <div className="flex flex-col gap-3">
+          <Button
+            type="button"
+            className="w-full"
+            onClick={() => {
+              setWhyReady(true);
+              setSessionOn(true);
+            }}
+          >
+            I&apos;m ready — let&apos;s go
+          </Button>
+          <Link href={backHref} className="w-full">
+            <Button type="button" variant="secondary" className="w-full">
+              Back to plan
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (finished) {
     const review = summary ?? {
       ...buildSessionReview(stats, exerciseName),
       aiGenerated: false,
       loading: true,
     };
+    const praise =
+      appreciation ??
+      buildPostWorkoutAppreciation(getProfileFromSession(), stats, getShowUpCount());
 
     return (
       <div className="mx-auto max-w-lg space-y-5 px-4 py-6 fit-fade-up max-md:min-h-[100dvh] max-md:bg-[var(--fit-bg)] md:rounded-[1.5rem] md:border md:border-[var(--fit-border)] md:bg-[var(--fit-surface)] md:p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fit-accent)]">
-          Session complete ·{" "}
-          {review.aiGenerated ? "Cursor LLM coach" : "AI Coach summary"}
-          {review.loading ? " · generating…" : ""}
-        </p>
-        <h1 className="font-display text-2xl font-semibold text-[var(--fit-ink)] sm:text-3xl">
-          {exerciseName}
-        </h1>
-        <p className="text-sm leading-relaxed text-[var(--fit-muted)]">
-          {review.headline}
+        <div className="rounded-2xl border border-[var(--fit-accent)]/35 bg-gradient-to-br from-[var(--fit-accent-soft)] to-[var(--fit-surface)] px-5 py-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fit-accent)]">
+            You showed up for yourself
+          </p>
+          <h1 className="mt-2 font-display text-2xl font-semibold leading-snug text-[var(--fit-ink)] sm:text-3xl">
+            {praise.title}
+          </h1>
+          <p className="mt-4 text-base leading-relaxed text-[var(--fit-ink)]">
+            {praise.message}
+          </p>
+          <p className="mt-4 text-sm font-medium text-[var(--fit-accent)]">{praise.footer}</p>
+        </div>
+
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fit-muted)]">
+          Session details · {exerciseName}
+          {review.loading ? " · generating coach notes…" : ""}
         </p>
 
         <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -217,7 +308,7 @@ export function MotionTracker({
 
         <div className="rounded-2xl border border-rose-300/50 bg-rose-50/80 px-4 py-3 dark:border-rose-800/50 dark:bg-rose-950/30">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-rose-700 dark:text-rose-300">
-            Needs work
+            Your next edge
           </p>
           <ul className="mt-2 space-y-1.5 text-sm text-[var(--fit-ink)]">
             {review.improvements.map((s) => (
@@ -236,8 +327,10 @@ export function MotionTracker({
             onClick={() => {
               setFinished(false);
               setSummary(null);
+              setAppreciation(null);
+              setWhyReady(false);
+              setSessionOn(false);
               resetSession();
-              setSessionOn(true);
             }}
           >
             Train again

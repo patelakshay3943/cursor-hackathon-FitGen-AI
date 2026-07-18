@@ -10,11 +10,7 @@ import type {
 import { dayWorkoutSchema } from "@/backend/types/plan.types";
 import type { DayFocus } from "./split-template.service";
 
-async function loadCursorSdk() {
-  // Dynamic import keeps @cursor/sdk off the client graph and pairs with
-  // next.config serverExternalPackages.
-  return import("@cursor/sdk");
-}
+import { loadCursorSdk } from "./cursor-sdk-bootstrap";
 
 function getApiKey(): string | null {
   const key = process.env.CURSOR_API_KEY?.trim();

@@ -2,9 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-async function loadCursorSdk() {
-  return import("@cursor/sdk");
-}
+import { loadCursorSdk } from "./cursor-sdk-bootstrap";
 
 export function getCursorApiKey(): string | null {
   const key = process.env.CURSOR_API_KEY?.trim();

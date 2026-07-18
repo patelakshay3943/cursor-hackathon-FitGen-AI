@@ -74,35 +74,35 @@ export const PLAN_STORAGE_EVENT = "fitgen-plan-updated";
 
 export function savePlanId(planId: string) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(PLAN_STORAGE_KEY, planId);
+  sessionStorage.setItem(PLAN_STORAGE_KEY, planId);
   window.dispatchEvent(new Event(PLAN_STORAGE_EVENT));
 }
 
 export function getStoredPlanId(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(PLAN_STORAGE_KEY);
+  return sessionStorage.getItem(PLAN_STORAGE_KEY);
 }
 
 export const GOAL_OPTIONS = [
   {
     value: "muscle_gain" as const,
-    label: "Build muscle",
-    description: "Hypertrophy-focused training with progressive volume",
+    label: "Build a stronger body",
+    description: "Grow muscle and feel more capable every day",
   },
   {
     value: "fat_loss" as const,
-    label: "Lose fat",
-    description: "Higher-rep circuits that keep heart rate elevated",
+    label: "Become leaner & fitter",
+    description: "Move with energy and build a healthier body",
   },
   {
     value: "strength" as const,
-    label: "Get stronger",
-    description: "Lower-rep compound lifts with longer rest",
+    label: "Become stronger",
+    description: "Lift with confidence and unlock your power",
   },
   {
     value: "general_fitness" as const,
-    label: "Stay fit",
-    description: "Balanced full-body conditioning and strength",
+    label: "Become fitter",
+    description: "Stay active, energized, and feel good in your body",
   },
 ];
 
