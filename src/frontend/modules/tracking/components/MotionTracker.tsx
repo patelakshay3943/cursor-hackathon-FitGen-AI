@@ -8,6 +8,7 @@ import { createTrackerForExercise, getSetupTips, isPreciseTracker } from "../exe
 import { usePoseCamera } from "../hooks/usePoseCamera";
 import { useExerciseSession } from "../hooks/useExerciseSession";
 import { useLlmLiveCoach } from "../hooks/useLlmLiveCoach";
+import { primeCoachVoice, useCoachVoice } from "../hooks/useCoachVoice";
 import { TrackingOverlay } from "./TrackingOverlay";
 import { CoachPanel } from "./CoachPanel";
 import { buildSessionReview } from "../lib/sessionReview";
@@ -128,6 +129,29 @@ export function MotionTracker({
     wholeExerciseWrong: stats.wholeExerciseWrong,
   });
 
+  // Voice uses the same alert text as the red banner / setup coach
+  const voiceAlertText = useMemo(() => {
+    if (!ready || lowConfidence || stats.resting) return "";
+    const text = (llmCoach.displayCue || stats.cue).trim();
+    if (stats.wholeExerciseWrong || stats.metrics.mismatch === 1) return text;
+    if (isFormIssue && text.length >= 4) return text;
+    return "";
+  }, [
+    ready,
+    lowConfidence,
+    stats.resting,
+    stats.cue,
+    stats.wholeExerciseWrong,
+    stats.metrics.mismatch,
+    isFormIssue,
+    llmCoach.displayCue,
+  ]);
+
+  useCoachVoice(
+    sessionOn && !finished && voiceAlertText.length >= 4,
+    voiceAlertText,
+  );
+
   useEffect(() => {
     if (!finished) return;
 
@@ -232,6 +256,7 @@ export function MotionTracker({
             type="button"
             className="w-full"
             onClick={() => {
+              primeCoachVoice();
               setWhyReady(true);
               setSessionOn(true);
             }}

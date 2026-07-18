@@ -3,9 +3,21 @@
 import { useEffect, useRef } from "react";
 
 /** Don't re-speak the exact same cue within this window */
-const SAME_CUE_COOLDOWN_MS = 12_000;
+const SAME_CUE_COOLDOWN_MS = 8_000;
 
 const audioCache = new Map<string, string>();
+let voicesWarmed = false;
+
+function warmSpeechVoices() {
+  if (typeof window === "undefined" || !window.speechSynthesis || voicesWarmed) {
+    return;
+  }
+  voicesWarmed = true;
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+  };
+}
 
 function stopBrowserSpeech() {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -14,6 +26,7 @@ function stopBrowserSpeech() {
 
 function speakWithBrowser(text: string) {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
+  warmSpeechVoices();
   stopBrowserSpeech();
   const utter = new SpeechSynthesisUtterance(text);
   utter.rate = 1.05;
@@ -62,8 +75,8 @@ async function fetchCoachAudio(text: string): Promise<string | null> {
 }
 
 /**
- * Speaks wrong-form coach cues aloud via ElevenLabs (server) with
- * Web Speech API fallback so the user hears alerts during the workout.
+ * Speaks form alerts aloud — same text as the on-screen notification.
+ * Browser speech fires immediately; ElevenLabs upgrades when available.
  */
 export function useCoachVoice(enabled: boolean, cue: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -96,22 +109,20 @@ export function useCoachVoice(enabled: boolean, cue: string) {
     lastSpokenAtRef.current = now;
     const reqId = ++requestIdRef.current;
 
-    stopBrowserSpeech();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
 
+    // Immediate voice — mirrors the text alert without waiting for TTS API
+    speakWithBrowser(text);
+
     void (async () => {
       try {
         const url = await fetchCoachAudio(text);
-        if (reqId !== requestIdRef.current) return;
+        if (reqId !== requestIdRef.current || !url) return;
 
-        if (!url) {
-          speakWithBrowser(text);
-          return;
-        }
-
+        stopBrowserSpeech();
         const audio = new Audio(url);
         audioRef.current = audio;
         audio.volume = 1;
@@ -137,4 +148,9 @@ export function useCoachVoice(enabled: boolean, cue: string) {
       }
     };
   }, []);
+}
+
+/** Call once after the user taps start so mobile browsers allow speech */
+export function primeCoachVoice() {
+  warmSpeechVoices();
 }
