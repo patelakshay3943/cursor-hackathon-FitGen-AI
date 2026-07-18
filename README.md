@@ -128,3 +128,40 @@ Optional expansion: [wger](https://wger.de/) English exercises via `npm run db:i
 3. User sees Day 1; Days 2–28 are locked
 4. "Mark complete" → Day 2 is generated and unlocked
 5. Repeat through Day 28
+
+## Deploy on Render
+
+This repo includes a [Render Blueprint](https://render.com/docs/infrastructure-as-code) at `render.yaml` (web service + Postgres).
+
+### One-click / Blueprint
+
+1. Push this repo to GitHub (include `render.yaml`, `package-lock.json`, `data/exercises.json`).
+2. In [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint** → select the repo.
+3. Render creates:
+   - **fitgen-db** (Postgres)
+   - **fitgen-ai** (Node web service)
+4. When prompted, set secrets (do not commit these):
+   - `CURSOR_API_KEY` — required for AI day plans / coach ([Cursor Integrations](https://cursor.com/dashboard/integrations))
+   - `ELEVENLABS_API_KEY` — optional (voice coach)
+5. Deploy. First boot runs `prisma db push` and seeds the exercise catalog if empty (can take a few minutes).
+
+App URL will look like: `https://fitgen-ai.onrender.com`
+
+### Manual Web Service (alternative)
+
+| Setting | Value |
+|---------|--------|
+| Runtime | Node |
+| Build command | `npm ci && npm run build` |
+| Start command | `npm run start:render` |
+| Node version | 22 (or set `NODE_VERSION=22.12.0`) |
+
+Link a Render Postgres instance and set `DATABASE_URL` from the database **Internal** connection string. Also set `CURSOR_API_KEY`, `CURSOR_MODEL=composer-2.5`, and `EXERCISE_IMAGE_BASE` (see `.env.example`).
+
+### Notes
+
+- Free tier spins down after idle — first request can be slow.
+- Motion tracking needs **HTTPS** (Render provides it) for camera access on phones.
+- `@cursor/sdk` needs a valid `CURSOR_API_KEY` in production; without it, plan generation falls back / errors depending on `requireAi`.
+- Do **not** commit `.env`. Use Render **Environment** for secrets.
+
