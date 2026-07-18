@@ -1,79 +1,71 @@
 import Link from "next/link";
 import { APP_NAME } from "@/config/app";
-import { WelcomeBanner } from "@/frontend";
-import { getStaticOrders, OrderSummary } from "@/modules/order";
-import { getStaticProducts, ProductGrid } from "@/modules/product";
-import { UserBadge } from "@/modules/user";
 import { ROUTES } from "@/shared/constants";
 
 export default function HomePage() {
-  const products = getStaticProducts().slice(0, 3);
-  const sampleOrder = getStaticOrders()[0];
-
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-10">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {APP_NAME}
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-          Full-stack Next.js app with a clear split:{" "}
-          <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">src/frontend</code>{" "}
-          for UI and state,{" "}
-          <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">src/backend</code>{" "}
-          for API logic, and{" "}
-          <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">src/app/api</code>{" "}
-          as route handlers.
-        </p>
-        <WelcomeBanner />
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href={ROUTES.products}
-            className="text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
-          >
-            Browse products
-          </Link>
-          <Link
-            href={ROUTES.orders}
-            className="text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
-          >
-            View orders
-          </Link>
-          <Link
-            href={ROUTES.login}
-            className="text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
-          >
-            Log in
-          </Link>
-        </div>
-      </section>
-
-      <section className="grid gap-8 lg:grid-cols-2">
-        <div>
-          <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            Session
-          </h2>
-          <div className="mt-2">
-            <UserBadge />
-          </div>
-        </div>
-        <div>
-          <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            Sample order
-          </h2>
-          <div className="mt-2">
-            <OrderSummary order={sampleOrder} />
+    <main className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-16 pt-10">
+      <section className="relative overflow-hidden rounded-[2rem] border border-[var(--fit-border)] bg-[var(--fit-surface)] px-6 py-14 sm:px-12 sm:py-20">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-90"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(15,122,95,0.18) 0%, transparent 42%), linear-gradient(225deg, rgba(196,92,38,0.12) 0%, transparent 40%)",
+          }}
+        />
+        <div className="relative max-w-xl space-y-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--fit-accent)]">
+            AI personal trainer
+          </p>
+          <h1 className="font-display text-5xl font-semibold leading-[1.05] tracking-tight text-[var(--fit-ink)] sm:text-6xl">
+            {APP_NAME}
+          </h1>
+          <p className="text-base leading-relaxed text-[var(--fit-muted)] sm:text-lg">
+            Answer a short assessment. We filter 800+ exercises from our database, then OpenAI
+            builds Day 1 of your 28-day plan — unlock the next day when you finish.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Link
+              href={ROUTES.generate}
+              className="inline-flex items-center justify-center rounded-full bg-[var(--fit-accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--fit-accent-hover)]"
+            >
+              Start assessment
+            </Link>
+            <Link
+              href={ROUTES.exercises}
+              className="inline-flex items-center justify-center rounded-full border border-[var(--fit-border)] bg-[var(--fit-surface)] px-6 py-3 text-sm font-semibold text-[var(--fit-ink)] transition hover:border-[var(--fit-accent)]"
+            >
+              Browse exercises
+            </Link>
           </div>
         </div>
       </section>
 
-      <section>
-        <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-          Featured products
-        </h2>
-        <div className="mt-4">
-          <ProductGrid products={products} />
-        </div>
+      <section className="mt-10 grid gap-4 sm:grid-cols-3">
+        {[
+          {
+            title: "Smart assessment",
+            body: "Goal, schedule, limitations, and gear — so every workout fits your life.",
+          },
+          {
+            title: "AI + real database",
+            body: "OpenAI only picks from your seeded exercise library — no invented moves.",
+          },
+          {
+            title: "Day-by-day unlock",
+            body: "See Day 1 now. Complete it to generate and unlock Day 2, through 4 weeks.",
+          },
+        ].map((card) => (
+          <div
+            key={card.title}
+            className="rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)] p-5"
+          >
+            <h2 className="font-display text-lg font-semibold text-[var(--fit-ink)]">
+              {card.title}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--fit-muted)]">{card.body}</p>
+          </div>
+        ))}
       </section>
     </main>
   );

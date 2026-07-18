@@ -4,18 +4,28 @@ module.exports = [
 
 __turbopack_context__.s([
     "ROUTES",
-    ()=>ROUTES
+    ()=>ROUTES,
+    "planPath",
+    ()=>planPath
 ]);
 const ROUTES = {
     home: "/",
+    generate: "/generate",
+    plan: "/plan",
+    exercises: "/exercises",
     login: "/login",
     register: "/register",
     products: "/products",
     orders: "/orders",
     api: {
-        welcome: "/api/welcome"
+        welcome: "/api/welcome",
+        plansGenerate: "/api/plans/generate",
+        exercises: "/api/exercises"
     }
 };
+function planPath(id) {
+    return `/plan/${id}`;
+}
 }),
 "[project]/src/frontend/api/welcome.ts [app-ssr] (ecmascript)", ((__turbopack_context__) => {
 "use strict";

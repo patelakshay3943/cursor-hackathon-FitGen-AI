@@ -1,13 +1,20 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans, Outfit, Geist_Mono } from "next/font/google";
 import { StoreProvider } from "@/store/StoreProvider";
 import { Navbar } from "@/shared/components/layout/Navbar";
 import "../styles/globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Outfit({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const body = DM_Sans({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -17,7 +24,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "FitGen AI",
-  description: "Fitness app with professional frontend/backend structure",
+  description: "AI workout plans from your assessment — unlock one day at a time",
 };
 
 export default function RootLayout({
@@ -28,9 +35,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <StoreProvider>
           <Navbar />
           {children}

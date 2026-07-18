@@ -1,65 +1,116 @@
 # FitGen AI
 
-Full-stack Next.js app with a professional **frontend / backend** folder layout.
+Progressive daily workout plan generator. Submit your profile, get **Day 1 instantly**, then unlock each next day as you complete workouts. Built with Next.js, PostgreSQL, and OpenAI on top of the [free-exercise-db](https://github.com/yuhonas/free-exercise-db) dataset.
+
+## Features
+
+- Anonymous plan generation (no login)
+- 28-day skeleton with Push/Pull/Legs (or Full Body / Upper-Lower) splits
+- AI generates **one day at a time** for fast first load
+- Manual "complete day" unlocks the next workout (hackathon-friendly)
+- Exercise library with images from free-exercise-db
+
+## Stack
+
+- Next.js 16 (App Router) + TypeScript + Tailwind
+- PostgreSQL + Prisma 5
+- OpenAI (`gpt-4o-mini`) with JSON responses + local fallback if no API key
 
 ## Project structure
 
 ```
 src/
-├── app/                    # Next.js App Router (pages + API route handlers)
-│   ├── api/
-│   │   └── welcome/        # GET /api/welcome
-│   ├── (auth)/
-│   ├── layout.tsx
-│   └── page.tsx
-├── backend/                # Server-side business logic
-│   ├── controllers/        # Request handlers
-│   ├── services/           # Domain / business logic
-│   └── types/              # API response types
-├── frontend/               # Client-side code
-│   ├── components/         # App-level UI components
-│   ├── modules/            # Feature modules (auth, product, order, user)
-│   ├── shared/             # Shared UI, hooks, constants
-│   └── store/              # Redux store
-├── config/                 # App configuration
-├── lib/                    # Shared utilities
-├── styles/                 # Global CSS
-└── middleware.ts           # Next.js middleware
+├── app/                    # Pages + API route handlers
+│   ├── api/plans/          # generate, get, complete day
+│   ├── api/exercises/
+│   ├── generate/
+│   ├── plan/[id]/
+│   └── exercises/
+├── backend/                # Controllers + services
+├── frontend/modules/plan/  # Plan UI + hooks
+prisma/                     # Schema + seed
+data/exercises.json         # Vendored free-exercise-db
 ```
 
-## Getting started
+## Setup
+
+### 1. Install dependencies
 
 ```bash
 npm install
+```
+
+### 2. Environment
+
+```bash
+cp .env.example .env
+```
+
+Set at least:
+
+```
+DATABASE_URL=postgresql://fitgen:fitgen@localhost:5432/fitgen
+OPENAI_API_KEY=sk-...          # optional — falls back to rule-based picks
+OPENAI_MODEL=gpt-4o-mini
+EXERCISE_IMAGE_BASE=https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises
+```
+
+### 3. Database
+
+**Option A — local Postgres** (create user/db, then):
+
+```bash
+npm run db:setup
+```
+
+**Option B — Docker** (maps host port **5433**):
+
+```bash
+docker compose up -d
+# then set DATABASE_URL=postgresql://fitgen:fitgen@localhost:5433/fitgen
+npm run db:setup
+```
+
+### 4. Run
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the app.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Welcome API
+## API
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/plans/generate` | Create plan + Day 1 |
+| GET | `/api/plans/:id` | Full plan state |
+| POST | `/api/plans/:id/days/:n/complete` | Complete day N, unlock N+1 |
+| GET | `/api/plans/:id/days/:n` | Single day |
+| GET | `/api/exercises` | Browse/filter exercises |
+
+Example:
 
 ```bash
-curl http://localhost:3000/api/welcome
-```
-
-Example response:
-
-```json
-{
-  "message": "Welcome to FitGen AI! Your fitness journey starts here.",
-  "app": "FitGen AI",
-  "version": "0.1.0",
-  "timestamp": "2026-07-18T05:57:00.000Z",
-  "status": "ok"
-}
+curl -X POST http://localhost:3000/api/plans/generate \
+  -H 'Content-Type: application/json' \
+  -d '{"goal":"muscle_gain","level":"beginner","daysPerWeek":4,"equipment":["dumbbell","bodyweight"],"sessionMinutes":45}'
 ```
 
 ## Scripts
 
-| Command           | Description              |
-| ----------------- | ------------------------ |
-| `npm run dev`     | Start development server |
-| `npm run build`   | Production build         |
-| `npm run start`   | Start production server  |
-| `npm run lint`    | Run ESLint               |
-| `npm run format`  | Format with Prettier     |
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run db:setup` | Push schema + seed exercises |
+| `npm run db:seed` | Re-seed exercises only |
+| `npm run lint` | ESLint |
+
+## Progressive unlock flow
+
+1. User fills profile on `/generate`
+2. Backend builds 28-day skeleton, AI fills **Day 1 only**
+3. User sees Day 1; Days 2–28 are locked
+4. "Mark complete" → Day 2 is generated and unlocked
+5. Repeat through Day 28

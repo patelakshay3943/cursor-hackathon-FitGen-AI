@@ -1,56 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logout } from "@/store/slices/authSlice";
+import { useEffect, useState } from "react";
 import { APP_NAME } from "@/config/app";
-import { Button } from "@/shared/components/ui/Button";
+import { ROUTES, planPath } from "@/shared/constants";
+import { PLAN_STORAGE_EVENT, getStoredPlanId } from "@/modules/plan";
 
 const linkClass =
-  "text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100";
+  "text-sm text-[var(--fit-muted)] transition hover:text-[var(--fit-ink)]";
 
 export function Navbar() {
-  const dispatch = useAppDispatch();
-  const { isAuthenticated, displayName } = useAppSelector((s) => s.auth);
+  const [planId, setPlanId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sync = () => setPlanId(getStoredPlanId());
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener(PLAN_STORAGE_EVENT, sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(PLAN_STORAGE_EVENT, sync);
+    };
+  }, []);
 
   return (
-    <header className="border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+    <header className="sticky top-0 z-20 border-b border-[var(--fit-border)] bg-[var(--fit-surface)]/85 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4">
         <Link
-          href="/"
-          className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+          href={ROUTES.home}
+          className="font-display text-base font-semibold tracking-tight text-[var(--fit-ink)]"
         >
           {APP_NAME}
         </Link>
         <nav className="flex flex-wrap items-center gap-4">
-          <Link className={linkClass} href="/products">
-            Products
+          <Link className={linkClass} href={ROUTES.generate}>
+            Assessment
           </Link>
-          <Link className={linkClass} href="/orders">
-            Orders
-          </Link>
-          {isAuthenticated ? (
-            <>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                {displayName || "User"}
-              </span>
-              <Button type="button" variant="ghost" onClick={() => dispatch(logout())}>
-                Log out
-              </Button>
-            </>
+          {planId ? (
+            <Link className={linkClass} href={planPath(planId)}>
+              My Plan
+            </Link>
           ) : (
-            <>
-              <Link className={linkClass} href="/login">
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 py-1.5 text-xs font-medium text-zinc-900 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-              >
-                Register
-              </Link>
-            </>
+            <span className="text-sm text-[var(--fit-border)]">My Plan</span>
           )}
+          <Link className={linkClass} href={ROUTES.exercises}>
+            Exercises
+          </Link>
         </nav>
       </div>
     </header>

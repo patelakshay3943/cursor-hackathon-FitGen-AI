@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanDayStatus {
+  locked
+  generating
+  ready
+  completed
+}
+
+model Exercise {
+  id               String   @id
+  name             String
+  force            String?
+  level            String
+  mechanic         String?
+  equipment        String?
+  category         String
+  primaryMuscles   Json
+  secondaryMuscles Json
+  instructions     Json
+  images           Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([level])
+  @@index([equipment])
+  @@index([category])
+}
+
+model Plan {
+  id         String    @id @default(uuid())
+  profile    Json
+  splitType  String
+  startDate  DateTime  @default(now())
+  currentDay Int       @default(1)
+  skeleton   Json
+  createdAt  DateTime  @default(now())
+  days       PlanDay[]
+}
+
+model PlanDay {
+  id          String        @id @default(uuid())
+  planId      String
+  plan        Plan          @relation(fields: [planId], references: [id], onDelete: Cascade)
+  dayNumber   Int
+  weekNumber  Int
+  focus       String
+  isRestDay   Boolean       @default(false)
+  status      PlanDayStatus @default(locked)
+  workout     Json?
+  generatedAt DateTime?
+  completedAt DateTime?
+
+  @@unique([planId, dayNumber])
+  @@index([planId])
+}
