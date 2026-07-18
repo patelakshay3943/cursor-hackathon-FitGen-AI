@@ -39,6 +39,7 @@ export function usePlanProgress(planId: string) {
         );
         setPlan(data);
         setMessage(data.message ?? `Day ${dayNumber} completed`);
+        window.setTimeout(() => setMessage(null), 5000);
         return data;
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to complete day";

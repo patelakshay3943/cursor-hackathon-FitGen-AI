@@ -49,3 +49,79 @@ body {
 .font-display {
   font-family: var(--font-display), system-ui, sans-serif;
 }
+
+@keyframes fit-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fit-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fit-pulse-soft {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fit-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.fit-fade-up {
+  animation: fit-fade-up 0.45s ease-out both;
+}
+
+.fit-fade-in {
+  animation: fit-fade-in 0.35s ease-out both;
+}
+
+.fit-delay-1 {
+  animation-delay: 0.08s;
+}
+.fit-delay-2 {
+  animation-delay: 0.16s;
+}
+.fit-delay-3 {
+  animation-delay: 0.24s;
+}
+
+.fit-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--fit-border) 0%,
+    var(--fit-surface) 50%,
+    var(--fit-border) 100%
+  );
+  background-size: 200% 100%;
+  animation: fit-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fit-fade-up,
+  .fit-fade-in,
+  .fit-skeleton {
+    animation: none;
+  }
+}

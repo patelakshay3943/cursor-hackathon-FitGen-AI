@@ -7,7 +7,7 @@ import { ROUTES, planPath } from "@/shared/constants";
 import { PLAN_STORAGE_EVENT, getStoredPlanId } from "@/modules/plan";
 
 const linkClass =
-  "text-sm text-[var(--fit-muted)] transition hover:text-[var(--fit-ink)]";
+  "text-sm font-medium text-[var(--fit-muted)] transition hover:text-[var(--fit-ink)]";
 
 export function Navbar() {
   const [planId, setPlanId] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--fit-border)] bg-[var(--fit-surface)]/85 backdrop-blur-md">
+    <header className="sticky top-0 z-20 border-b border-[var(--fit-border)] bg-[var(--fit-surface)]/80 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4">
         <Link
           href={ROUTES.home}
@@ -32,19 +32,26 @@ export function Navbar() {
         >
           {APP_NAME}
         </Link>
-        <nav className="flex flex-wrap items-center gap-4">
-          <Link className={linkClass} href={ROUTES.generate}>
+        <nav className="flex flex-wrap items-center gap-1 sm:gap-2">
+          <Link className={`${linkClass} rounded-full px-3 py-1.5 hover:bg-[var(--fit-accent-soft)]`} href={ROUTES.generate}>
             Assessment
           </Link>
           {planId ? (
-            <Link className={linkClass} href={planPath(planId)}>
+            <Link
+              className={`${linkClass} rounded-full px-3 py-1.5 hover:bg-[var(--fit-accent-soft)]`}
+              href={planPath(planId)}
+            >
               My Plan
             </Link>
-          ) : (
-            <span className="text-sm text-[var(--fit-border)]">My Plan</span>
-          )}
-          <Link className={linkClass} href={ROUTES.exercises}>
+          ) : null}
+          <Link className={`${linkClass} rounded-full px-3 py-1.5 hover:bg-[var(--fit-accent-soft)]`} href={ROUTES.exercises}>
             Exercises
+          </Link>
+          <Link
+            href={ROUTES.generate}
+            className="ml-1 hidden rounded-full bg-[var(--fit-accent)] px-3.5 py-1.5 text-xs font-semibold text-white sm:inline-flex"
+          >
+            Get started
           </Link>
         </nav>
       </div>

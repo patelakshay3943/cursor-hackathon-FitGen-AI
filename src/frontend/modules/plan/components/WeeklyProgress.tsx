@@ -29,7 +29,7 @@ export function WeeklyProgress({
   const activeWeek = Math.ceil(currentDay / 7);
 
   return (
-    <aside className="space-y-5 rounded-[1.5rem] border border-[var(--fit-border)] bg-[var(--fit-surface)] p-5">
+    <aside className="space-y-5 rounded-[1.5rem] border border-[var(--fit-border)] bg-[var(--fit-surface)] p-5 lg:sticky lg:top-20 lg:self-start">
       <div>
         <div className="mb-2 flex items-center justify-between text-xs text-[var(--fit-muted)]">
           <span>

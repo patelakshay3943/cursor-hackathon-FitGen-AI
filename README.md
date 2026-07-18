@@ -103,9 +103,21 @@ curl -X POST http://localhost:3000/api/plans/generate \
 |---------|-------------|
 | `npm run dev` | Dev server |
 | `npm run build` | Production build |
-| `npm run db:setup` | Push schema + seed exercises |
-| `npm run db:seed` | Re-seed exercises only |
+| `npm run db:setup` | Push schema + enrich seed + import wger |
+| `npm run db:seed` | Re-seed/enrich free-exercise-db |
+| `npm run db:import-wger` | Merge extra exercises from wger API |
+| `npm run db:enrich` | Seed + wger import |
 | `npm run lint` | ESLint |
+
+## Exercise database
+
+Primary source: [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (~873 exercises) with enriched fields:
+
+- `muscleGroup`, `tags`, `aliases`, `popularity`, `source`
+- Auto-filled `force` / `mechanic` / `equipment` when missing
+
+Optional expansion: [wger](https://wger.de/) English exercises via `npm run db:import-wger` (CC-BY-SA). Duplicates by name are merged/enriched instead of duplicated.
+
 
 ## Progressive unlock flow
 

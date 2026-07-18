@@ -12,7 +12,9 @@
     "prepare": "husky",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:setup": "prisma db push && tsx prisma/seed.ts",
+    "db:import-wger": "tsx prisma/import-wger.ts",
+    "db:enrich": "npm run db:seed && npm run db:import-wger",
+    "db:setup": "prisma db push && npm run db:enrich",
     "db:generate": "prisma generate",
     "postinstall": "prisma generate"
   },

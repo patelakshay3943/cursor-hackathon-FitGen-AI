@@ -173,7 +173,7 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
       </div>
 
       {step === 1 ? (
-        <fieldset className="grid gap-3 sm:grid-cols-2">
+        <fieldset key="s1" className="grid gap-3 sm:grid-cols-2 fit-fade-up">
           {GOAL_OPTIONS.map((opt) => (
             <OptionCard
               key={opt.value}
@@ -187,7 +187,7 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
       ) : null}
 
       {step === 2 ? (
-        <div className="space-y-6">
+        <div key="s2" className="space-y-6 fit-fade-up">
           <fieldset className="space-y-3">
             <Label>Training days per week</Label>
             <div className="grid grid-cols-4 gap-2">
@@ -239,7 +239,7 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
       ) : null}
 
       {step === 3 ? (
-        <div className="space-y-6">
+        <div key="s3" className="space-y-6 fit-fade-up">
           <fieldset className="grid gap-3">
             <Label>Experience level</Label>
             {LEVEL_OPTIONS.map((opt) => (
@@ -343,7 +343,7 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
       ) : null}
 
       {step === 4 ? (
-        <div className="space-y-6">
+        <div key="s4" className="space-y-6 fit-fade-up">
           <fieldset className="space-y-2">
             <Label>Where do you train?</Label>
             <div className="grid gap-2 sm:grid-cols-3">
@@ -411,7 +411,7 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
       ) : null}
 
       {step === 5 ? (
-        <div className="space-y-4 rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)] p-5">
+        <div key="s5" className="space-y-4 rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)] p-5 fit-fade-up">
           <p className="text-sm text-[var(--fit-muted)]">
             AI will build a 28-day plan and generate <strong>Day 1</strong> using exercises from
             your database that match this profile.

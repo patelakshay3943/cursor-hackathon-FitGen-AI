@@ -4,66 +4,70 @@ import { ROUTES } from "@/shared/constants";
 
 export default function HomePage() {
   return (
-    <main className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-16 pt-10">
-      <section className="relative overflow-hidden rounded-[2rem] border border-[var(--fit-border)] bg-[var(--fit-surface)] px-6 py-14 sm:px-12 sm:py-20">
+    <main className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-20 pt-8">
+      <section className="relative overflow-hidden rounded-[2rem] border border-[var(--fit-border)] bg-[var(--fit-surface)] px-6 py-14 sm:px-12 sm:py-20 fit-fade-up">
         <div
-          className="pointer-events-none absolute inset-0 opacity-90"
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "linear-gradient(135deg, rgba(15,122,95,0.18) 0%, transparent 42%), linear-gradient(225deg, rgba(196,92,38,0.12) 0%, transparent 40%)",
+              "linear-gradient(135deg, rgba(15,122,95,0.2) 0%, transparent 45%), linear-gradient(225deg, rgba(196,92,38,0.14) 0%, transparent 42%)",
           }}
         />
+        <div
+          className="pointer-events-none absolute -right-8 top-8 hidden h-56 w-56 rounded-full border border-[var(--fit-accent)]/20 sm:block"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -right-2 top-20 hidden h-40 w-40 rounded-full bg-[var(--fit-accent)]/10 sm:block"
+          aria-hidden
+        />
+
         <div className="relative max-w-xl space-y-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--fit-accent)]">
-            AI personal trainer
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--fit-accent)]">
+            Your AI training partner
           </p>
-          <h1 className="font-display text-5xl font-semibold leading-[1.05] tracking-tight text-[var(--fit-ink)] sm:text-6xl">
+          <h1 className="font-display text-5xl font-semibold leading-[1.02] tracking-tight text-[var(--fit-ink)] sm:text-6xl">
             {APP_NAME}
           </h1>
-          <p className="text-base leading-relaxed text-[var(--fit-muted)] sm:text-lg">
-            Answer a short assessment. We filter 800+ exercises from our database, then OpenAI
-            builds Day 1 of your 28-day plan — unlock the next day when you finish.
+          <p className="max-w-lg text-base leading-relaxed text-[var(--fit-muted)] sm:text-lg">
+            A short assessment. Exercises from our database. OpenAI builds Day 1 — unlock each
+            next day as you train.
           </p>
-          <div className="flex flex-wrap gap-3 pt-2">
+          <div className="flex flex-wrap gap-3 pt-1">
             <Link
               href={ROUTES.generate}
-              className="inline-flex items-center justify-center rounded-full bg-[var(--fit-accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--fit-accent-hover)]"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--fit-accent)] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-[var(--fit-accent)]/25 transition hover:bg-[var(--fit-accent-hover)]"
             >
-              Start assessment
+              Start free assessment
             </Link>
             <Link
               href={ROUTES.exercises}
               className="inline-flex items-center justify-center rounded-full border border-[var(--fit-border)] bg-[var(--fit-surface)] px-6 py-3 text-sm font-semibold text-[var(--fit-ink)] transition hover:border-[var(--fit-accent)]"
             >
-              Browse exercises
+              Explore exercises
             </Link>
           </div>
+          <p className="text-xs text-[var(--fit-muted)]">No account needed · ~2 minutes to Day 1</p>
         </div>
       </section>
 
-      <section className="mt-10 grid gap-4 sm:grid-cols-3">
+      <section className="mt-8 grid gap-3 sm:grid-cols-3">
         {[
-          {
-            title: "Smart assessment",
-            body: "Goal, schedule, limitations, and gear — so every workout fits your life.",
-          },
-          {
-            title: "AI + real database",
-            body: "OpenAI only picks from your seeded exercise library — no invented moves.",
-          },
-          {
-            title: "Day-by-day unlock",
-            body: "See Day 1 now. Complete it to generate and unlock Day 2, through 4 weeks.",
-          },
-        ].map((card) => (
+          { step: "01", title: "Assess", body: "Goal, schedule, gear, and any limitations." },
+          { step: "02", title: "Generate", body: "AI picks real exercises from our database." },
+          { step: "03", title: "Train daily", body: "Finish a day to unlock tomorrow’s workout." },
+        ].map((item, i) => (
           <div
-            key={card.title}
-            className="rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)] p-5"
+            key={item.step}
+            className={`rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)] p-5 fit-fade-up fit-delay-${i + 1}`}
           >
-            <h2 className="font-display text-lg font-semibold text-[var(--fit-ink)]">
-              {card.title}
+            <p className="text-xs font-semibold tracking-widest text-[var(--fit-accent)]">
+              {item.step}
+            </p>
+            <h2 className="mt-2 font-display text-lg font-semibold text-[var(--fit-ink)]">
+              {item.title}
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--fit-muted)]">{card.body}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-[var(--fit-muted)]">{item.body}</p>
           </div>
         ))}
       </section>

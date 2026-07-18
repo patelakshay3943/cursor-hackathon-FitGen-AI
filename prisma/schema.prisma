@@ -26,12 +26,25 @@ model Exercise {
   secondaryMuscles Json
   instructions     Json
   images           Json
+  /// Normalized primary muscle group for filtering (e.g. chest, back, legs)
+  muscleGroup      String?
+  /// Search aliases / alternate names
+  aliases          Json     @default("[]")
+  /// Free-form tags: compound, isolation, push, pull, home-friendly, etc.
+  tags             Json     @default("[]")
+  /// free-exercise-db | wger
+  source           String   @default("free-exercise-db")
+  /// Soft ranking for AI candidate picking (higher = preferred)
+  popularity       Int      @default(50)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   @@index([level])
   @@index([equipment])
   @@index([category])
+  @@index([muscleGroup])
+  @@index([source])
+  @@index([name])
 }
 
 model Plan {
