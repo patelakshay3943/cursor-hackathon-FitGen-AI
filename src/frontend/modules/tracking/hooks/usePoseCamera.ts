@@ -26,8 +26,9 @@ const CORE_LANDMARKS = [
 ];
 
 const CONFIDENCE_THRESHOLD = 0.6;
-/** Cap React re-renders from the detection loop (~25–30 FPS target). */
 const UI_UPDATE_MS = 40;
+
+export type CameraFacing = "user" | "environment";
 
 export type PoseFrameMeta = {
   lowConfidence: boolean;
@@ -40,6 +41,8 @@ export type PoseCameraState = {
   lowConfidence: boolean;
   landmarks: Landmark[] | null;
   fps: number;
+  facingMode: CameraFacing;
+  switching: boolean;
 };
 
 export function usePoseCamera(
@@ -55,8 +58,11 @@ export function usePoseCamera(
   const landmarkSmootherRef = useRef(new LandmarkSmoother(0.4));
   const onFrameRef = useRef(onFrame);
   onFrameRef.current = onFrame;
+  const streamRef = useRef<MediaStream | null>(null);
 
-  const [state, setState] = useState<PoseCameraState>({
+  const [facingMode, setFacingMode] = useState<CameraFacing>("user");
+  const [switching, setSwitching] = useState(false);
+  const [state, setState] = useState<Omit<PoseCameraState, "facingMode" | "switching">>({
     ready: false,
     error: null,
     lowConfidence: true,
@@ -64,16 +70,50 @@ export function usePoseCamera(
     fps: 0,
   });
 
+  const stopTracks = useCallback(() => {
+    if (streamRef.current) {
+      for (const track of streamRef.current.getTracks()) track.stop();
+      streamRef.current = null;
+    }
+    const video = videoRef.current;
+    if (video?.srcObject) {
+      video.srcObject = null;
+    }
+  }, []);
+
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     rafRef.current = 0;
-    const video = videoRef.current;
-    if (video?.srcObject) {
-      for (const track of (video.srcObject as MediaStream).getTracks()) {
-        track.stop();
-      }
-      video.srcObject = null;
+    stopTracks();
+  }, [stopTracks]);
+
+  const openStream = useCallback(async (facing: CameraFacing) => {
+    const isMobile =
+      typeof window !== "undefined" &&
+      (window.matchMedia("(max-width: 768px)").matches ||
+        /iPhone|iPad|Android/i.test(navigator.userAgent));
+
+    try {
+      return await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: facing },
+          width: { ideal: isMobile ? 720 : 1280 },
+          height: { ideal: isMobile ? 960 : 720 },
+          frameRate: { ideal: isMobile ? 24 : 30, max: 30 },
+        },
+        audio: false,
+      });
+    } catch {
+      // Fallback without ideal constraints (older phones)
+      return navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing },
+        audio: false,
+      });
     }
+  }, []);
+
+  const toggleFacing = useCallback(() => {
+    setFacingMode((f) => (f === "user" ? "environment" : "user"));
   }, []);
 
   useEffect(() => {
@@ -91,29 +131,24 @@ export function usePoseCamera(
 
     async function start() {
       try {
-        setState((s) => (s.error ? { ...s, error: null } : s));
+        setSwitching(true);
+        setState((s) => ({ ...s, error: null, ready: false }));
+
+        // Stop previous stream before requesting the other camera
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+        stopTracks();
+
         const landmarker = await getPoseLandmarker();
         if (cancelled) return;
         landmarkerRef.current = landmarker;
 
-        const isMobile =
-          typeof window !== "undefined" &&
-          (window.matchMedia("(max-width: 768px)").matches ||
-            /iPhone|iPad|Android/i.test(navigator.userAgent));
-
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: "user" },
-            width: { ideal: isMobile ? 720 : 1280 },
-            height: { ideal: isMobile ? 960 : 720 },
-            frameRate: { ideal: isMobile ? 24 : 30, max: 30 },
-          },
-          audio: false,
-        });
+        const stream = await openStream(facingMode);
         if (cancelled) {
           for (const t of stream.getTracks()) t.stop();
           return;
         }
+        streamRef.current = stream;
 
         const video = videoRef.current;
         if (!video) return;
@@ -122,8 +157,10 @@ export function usePoseCamera(
 
         if (cancelled) return;
         setState((s) => ({ ...s, ready: true, error: null }));
+        setSwitching(false);
         lastUiPublishRef.current = 0;
         landmarkSmootherRef.current.reset();
+        lastTsRef.current = 0;
 
         const loop = () => {
           rafRef.current = requestAnimationFrame(loop);
@@ -137,7 +174,8 @@ export function usePoseCamera(
 
           try {
             const result = detectPoseForVideo(lm, v, now);
-            const rawPose = (result.landmarks?.[0] as Landmark[] | undefined) ?? null;
+            const rawPose =
+              (result.landmarks?.[0] as Landmark[] | undefined) ?? null;
             const pose = rawPose
               ? landmarkSmootherRef.current.next(rawPose)
               : null;
@@ -158,7 +196,6 @@ export function usePoseCamera(
               fps: fpsCounter.current.fps,
             };
 
-            // Drive trackers off the rAF path without forcing a React render.
             onFrameRef.current?.(pose, meta);
 
             if (now - lastUiPublishRef.current >= UI_UPDATE_MS) {
@@ -186,17 +223,21 @@ export function usePoseCamera(
 
         rafRef.current = requestAnimationFrame(loop);
       } catch (err) {
+        if (cancelled) return;
         const message =
           err instanceof Error
             ? err.message
             : "Camera or pose model failed to start";
+        setSwitching(false);
         setState((s) => ({
           ...s,
           ready: false,
           error:
             message.includes("Permission") || message.includes("NotAllowed")
               ? "Camera permission denied. Allow webcam access and reload."
-              : message,
+              : message.includes("NotFound") || message.includes("Overconstrained")
+                ? "That camera isn't available on this device. Try the other one."
+                : message,
         }));
       }
     }
@@ -207,9 +248,16 @@ export function usePoseCamera(
       cancelled = true;
       cancelAnimationFrame(rafRef.current);
       rafRef.current = 0;
-      stopCamera();
+      stopTracks();
     };
-  }, [enabled, stopCamera]);
+  }, [enabled, facingMode, openStream, stopCamera, stopTracks]);
 
-  return { videoRef, ...state };
+  return {
+    videoRef,
+    ...state,
+    facingMode,
+    switching,
+    toggleFacing,
+    setFacingMode,
+  };
 }

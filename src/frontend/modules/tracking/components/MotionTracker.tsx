@@ -59,8 +59,10 @@ export function MotionTracker({
       targetReps,
     });
 
-  const { videoRef, ready, error, lowConfidence, landmarks, fps } =
+  const { videoRef, ready, error, lowConfidence, landmarks, fps, facingMode, switching, toggleFacing } =
     usePoseCamera(sessionOn && !finished, processFrame);
+
+  const mirrored = facingMode === "user";
 
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
 
@@ -269,11 +271,25 @@ export function MotionTracker({
             frame
           </p>
         </div>
-        <Link href={backHref}>
-          <Button type="button" variant="ghost">
-            Exit
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={toggleFacing}
+            disabled={switching}
+          >
+            {switching
+              ? "Switching…"
+              : facingMode === "user"
+                ? "Use back camera"
+                : "Use front camera"}
           </Button>
-        </Link>
+          <Link href={backHref}>
+            <Button type="button" variant="ghost">
+              Exit
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {error ? (
@@ -294,32 +310,47 @@ export function MotionTracker({
         <video
           ref={videoRef}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ transform: "scaleX(-1)" }}
+          style={{ transform: mirrored ? "scaleX(-1)" : "none" }}
           playsInline
           muted
           autoPlay
         />
-        <TrackingOverlay video={videoEl} landmarks={landmarks} mirrored />
+        <TrackingOverlay video={videoEl} landmarks={landmarks} mirrored={mirrored} />
 
         {/* Mobile top HUD */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/75 via-black/35 to-transparent px-3 pb-8 pt-[max(0.65rem,env(safe-area-inset-top))] md:hidden">
           <div className="pointer-events-auto flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/70">
-                {precise ? "Precise" : "Guided"} · Live
+                {precise ? "Precise" : "Guided"} ·{" "}
+                {facingMode === "user" ? "Front cam" : "Back cam"}
               </p>
               <h1 className="truncate font-display text-lg font-semibold text-white">
                 {exerciseName}
               </h1>
             </div>
-            <Link href={backHref}>
+            <div className="flex shrink-0 items-center gap-2">
               <button
                 type="button"
-                className="rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-white backdrop-blur-md"
+                onClick={toggleFacing}
+                disabled={switching}
+                className="rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-white backdrop-blur-md disabled:opacity-50"
               >
-                Exit
+                {switching
+                  ? "…"
+                  : facingMode === "user"
+                    ? "Back cam"
+                    : "Front cam"}
               </button>
-            </Link>
+              <Link href={backHref}>
+                <button
+                  type="button"
+                  className="rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-white backdrop-blur-md"
+                >
+                  Exit
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -352,7 +383,7 @@ export function MotionTracker({
         {ready ? (
           <CoachPanel
             variant="overlay"
-            cue={isWrong ? llmCoach.displayCue : stats.cue}
+            cue={llmCoach.displayCue || stats.cue}
             formOk={stats.formOk}
             calibrated={stats.calibrated}
             lowConfidence={lowConfidence}

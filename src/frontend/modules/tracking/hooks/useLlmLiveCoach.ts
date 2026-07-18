@@ -9,7 +9,9 @@ type LiveCoachState = {
   loading: boolean;
 };
 
-const THROTTLE_MS = 12_000;
+const THROTTLE_MS = 14_000;
+/** Keep last LLM/rule cue while raw isWrong flickers off briefly */
+const CLEAR_HOLD_MS = 1500;
 
 /**
  * When form is wrong, ask Cursor LLM to rewrite the alert (throttled).
@@ -46,18 +48,42 @@ export function useLlmLiveCoach(params: {
   const inFlightRef = useRef(false);
   const lastKeyRef = useRef("");
   const requestIdRef = useRef(0);
+  const clearTimerRef = useRef<number | null>(null);
   const latestRef = useRef({ formScore, phase, metrics, formOk, ruleCue });
   latestRef.current = { formScore, phase, metrics, formOk, ruleCue };
 
   useEffect(() => {
-    if (!enabled || !isWrong) {
+    if (!enabled) {
+      if (clearTimerRef.current) window.clearTimeout(clearTimerRef.current);
       setState({ displayCue: ruleCue, aiGenerated: false, loading: false });
       return;
     }
 
-    // Show rule cue immediately while LLM runs
+    if (!isWrong) {
+      // Don't wipe the cue instantly — hold through brief recoveries
+      if (clearTimerRef.current) window.clearTimeout(clearTimerRef.current);
+      clearTimerRef.current = window.setTimeout(() => {
+        setState((s) => ({
+          ...s,
+          displayCue: ruleCue,
+          aiGenerated: false,
+          loading: false,
+        }));
+      }, CLEAR_HOLD_MS);
+      return;
+    }
+
+    if (clearTimerRef.current) {
+      window.clearTimeout(clearTimerRef.current);
+      clearTimerRef.current = null;
+    }
+
+    // Prefer keeping a stable AI cue; only fall back to rule text when empty
     setState((s) => ({
-      displayCue: s.aiGenerated && s.displayCue ? s.displayCue : ruleCue,
+      displayCue:
+        s.aiGenerated && s.displayCue && s.displayCue.length > 8
+          ? s.displayCue
+          : ruleCue || s.displayCue,
       aiGenerated: s.aiGenerated,
       loading: s.loading,
     }));
@@ -96,16 +122,22 @@ export function useLlmLiveCoach(params: {
       })
       .catch(() => {
         if (reqId !== requestIdRef.current) return;
-        setState({
-          displayCue: snap.ruleCue,
+        setState((s) => ({
+          displayCue: snap.ruleCue || s.displayCue,
           aiGenerated: false,
           loading: false,
-        });
+        }));
       })
       .finally(() => {
         inFlightRef.current = false;
       });
   }, [enabled, isWrong, exerciseName, ruleCue]);
+
+  useEffect(() => {
+    return () => {
+      if (clearTimerRef.current) window.clearTimeout(clearTimerRef.current);
+    };
+  }, []);
 
   return state;
 }

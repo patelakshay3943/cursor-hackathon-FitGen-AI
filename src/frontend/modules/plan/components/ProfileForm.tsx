@@ -45,20 +45,20 @@ function OptionCard({
   selected,
   title,
   description,
-  onClick,
+  onSelect,
 }: {
   selected: boolean;
   title: string;
   description?: string;
-  onClick: () => void;
+  onSelect: () => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={`rounded-2xl border px-4 py-3 text-left transition ${
+      onClick={onSelect}
+      className={`min-h-[3.25rem] touch-manipulation rounded-2xl border px-4 py-3 text-left transition active:scale-[0.98] ${
         selected
-          ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] shadow-sm"
+          ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] shadow-sm ring-2 ring-[var(--fit-accent)]/30"
           : "border-[var(--fit-border)] bg-[var(--fit-surface)] hover:border-[var(--fit-accent)]/40"
       }`}
     >
@@ -66,6 +66,11 @@ function OptionCard({
       {description ? (
         <span className="mt-1 block text-xs leading-relaxed text-[var(--fit-muted)]">
           {description}
+        </span>
+      ) : null}
+      {selected ? (
+        <span className="mt-2 block text-[10px] font-semibold uppercase tracking-wide text-[var(--fit-accent)]">
+          Selected
         </span>
       ) : null}
     </button>
@@ -180,7 +185,7 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
               selected={goal === opt.value}
               title={opt.label}
               description={opt.description}
-              onClick={() => setGoal(opt.value)}
+              onSelect={() => setGoal(opt.value)}
             />
           ))}
         </fieldset>
@@ -196,9 +201,9 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                   key={d}
                   type="button"
                   onClick={() => setDaysPerWeek(d)}
-                  className={`rounded-2xl border py-4 text-center transition ${
+                  className={`min-h-12 touch-manipulation rounded-2xl border py-4 text-center transition active:scale-[0.98] ${
                     daysPerWeek === d
-                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)]"
+                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] ring-2 ring-[var(--fit-accent)]/30"
                       : "border-[var(--fit-border)] bg-[var(--fit-surface)]"
                   }`}
                 >
@@ -224,9 +229,9 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                   key={m}
                   type="button"
                   onClick={() => setSessionMinutes(m)}
-                  className={`rounded-2xl border py-3 text-sm font-medium transition ${
+                  className={`min-h-12 touch-manipulation rounded-2xl border py-3 text-sm font-medium transition active:scale-[0.98] ${
                     sessionMinutes === m
-                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] text-[var(--fit-ink)]"
+                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] text-[var(--fit-ink)] ring-2 ring-[var(--fit-accent)]/30"
                       : "border-[var(--fit-border)] bg-[var(--fit-surface)] text-[var(--fit-muted)]"
                   }`}
                 >
@@ -248,7 +253,7 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                 selected={level === opt.value}
                 title={opt.label}
                 description={opt.description}
-                onClick={() => setLevel(opt.value)}
+                onSelect={() => setLevel(opt.value)}
               />
             ))}
           </fieldset>
@@ -262,9 +267,9 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                     key={a}
                     type="button"
                     onClick={() => setAgeRange(a)}
-                    className={`rounded-full border px-3 py-1.5 text-xs ${
+                    className={`min-h-10 touch-manipulation rounded-full border px-3 py-2 text-xs ${
                       ageRange === a
-                        ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)]"
+                        ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] ring-2 ring-[var(--fit-accent)]/25"
                         : "border-[var(--fit-border)]"
                     }`}
                   >
@@ -287,9 +292,9 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                     key={value}
                     type="button"
                     onClick={() => setSex(value)}
-                    className={`rounded-full border px-3 py-1.5 text-xs ${
+                    className={`min-h-10 touch-manipulation rounded-full border px-3 py-2 text-xs ${
                       sex === value
-                        ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)]"
+                        ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] ring-2 ring-[var(--fit-accent)]/25"
                         : "border-[var(--fit-border)]"
                     }`}
                   >
@@ -308,9 +313,9 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                   key={opt.value}
                   type="button"
                   onClick={() => toggleLimitation(opt.value)}
-                  className={`rounded-full border px-3 py-1.5 text-xs ${
+                  className={`min-h-10 touch-manipulation rounded-full border px-3 py-2 text-xs ${
                     limitations.includes(opt.value)
-                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)]"
+                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] ring-2 ring-[var(--fit-accent)]/25"
                       : "border-[var(--fit-border)]"
                   }`}
                 >
@@ -328,9 +333,9 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                   key={opt.value}
                   type="button"
                   onClick={() => toggleFocus(opt.value)}
-                  className={`rounded-full border px-3 py-1.5 text-xs ${
+                  className={`min-h-10 touch-manipulation rounded-full border px-3 py-2 text-xs ${
                     focusAreas.includes(opt.value)
-                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)]"
+                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] ring-2 ring-[var(--fit-accent)]/25"
                       : "border-[var(--fit-border)]"
                   }`}
                 >
@@ -358,9 +363,9 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                   key={value}
                   type="button"
                   onClick={() => setTrainingLocation(value)}
-                  className={`rounded-2xl border py-3 text-sm font-medium ${
+                  className={`min-h-12 touch-manipulation rounded-2xl border py-3 text-sm font-medium active:scale-[0.98] ${
                     trainingLocation === value
-                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)]"
+                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] ring-2 ring-[var(--fit-accent)]/30"
                       : "border-[var(--fit-border)]"
                   }`}
                 >
@@ -378,9 +383,9 @@ export function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
                   key={opt.value}
                   type="button"
                   onClick={() => toggleEquipment(opt.value)}
-                  className={`rounded-2xl border px-4 py-3 text-left ${
+                  className={`min-h-14 touch-manipulation rounded-2xl border px-4 py-3 text-left active:scale-[0.98] ${
                     equipment.includes(opt.value)
-                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)]"
+                      ? "border-[var(--fit-accent)] bg-[var(--fit-accent-soft)] ring-2 ring-[var(--fit-accent)]/30"
                       : "border-[var(--fit-border)] bg-[var(--fit-surface)]"
                   }`}
                 >

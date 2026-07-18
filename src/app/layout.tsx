@@ -52,8 +52,12 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${display.variable} ${body.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col pb-[env(safe-area-inset-bottom)]">
+      <body
+        className="flex min-h-full flex-col pb-[env(safe-area-inset-bottom)]"
+        suppressHydrationWarning
+      >
         <StoreProvider>
           <Navbar />
           {children}

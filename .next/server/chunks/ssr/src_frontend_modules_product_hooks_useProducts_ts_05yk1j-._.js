@@ -1,3 +1,0 @@
-module.exports=[10790,a=>{"use strict";var b=a.i(72131);let c=[{id:"p1",name:"Notebook",priceCents:899,description:"Lined pages, static catalog entry."},{id:"p2",name:"Mug",priceCents:1299,description:"Ceramic, demo only."},{id:"p3",name:"Sticker pack",priceCents:499,description:"Assorted shapes."}];a.s(["useProducts",0,function(){return(0,b.useMemo)(()=>c,[])}],10790)}];
-
-//# sourceMappingURL=src_frontend_modules_product_hooks_useProducts_ts_05yk1j-._.js.map
