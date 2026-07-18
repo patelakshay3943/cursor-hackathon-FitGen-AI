@@ -9,6 +9,7 @@ export {
   createTrackerForExercise,
   resolveTrackerKey,
   listTrackableLabels,
+  getSetupTips,
 } from "./exercises/registry";
 export type { ExerciseTracker, TrackerResult } from "./exercises/types";
 

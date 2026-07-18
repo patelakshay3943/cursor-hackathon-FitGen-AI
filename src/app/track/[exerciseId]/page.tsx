@@ -20,6 +20,10 @@ function TrackSession({ exerciseId }: { exerciseId: string }) {
     search.get("name") || decodeURIComponent(exerciseId.replace(/_/g, " "));
   const sets = Math.min(10, Math.max(1, Number(search.get("sets") || 3)));
   const reps = parseReps(search.get("reps"));
+  const restSec = Math.min(
+    180,
+    Math.max(20, Number(search.get("rest") || 45)),
+  );
   const planId = search.get("planId");
   const backHref = planId ? planPath(planId) : ROUTES.home;
 
@@ -29,6 +33,7 @@ function TrackSession({ exerciseId }: { exerciseId: string }) {
       exerciseName={name}
       targetSets={sets}
       targetReps={reps}
+      restSec={restSec}
       backHref={backHref}
     />
   );

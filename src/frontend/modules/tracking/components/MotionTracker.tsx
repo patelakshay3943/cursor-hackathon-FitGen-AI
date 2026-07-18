@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/Button";
 import { apiPost } from "@/shared/services/http";
-import { createTrackerForExercise, isPreciseTracker } from "../exercises/registry";
+import { createTrackerForExercise, getSetupTips, isPreciseTracker } from "../exercises/registry";
 import { usePoseCamera } from "../hooks/usePoseCamera";
 import { useExerciseSession } from "../hooks/useExerciseSession";
 import { useLlmLiveCoach } from "../hooks/useLlmLiveCoach";
@@ -17,6 +17,7 @@ type MotionTrackerProps = {
   exerciseName: string;
   targetSets: number;
   targetReps: number;
+  restSec?: number;
   backHref: string;
 };
 
@@ -39,6 +40,7 @@ export function MotionTracker({
   exerciseName,
   targetSets,
   targetReps,
+  restSec = 45,
   backHref,
 }: MotionTrackerProps) {
   const [sessionOn, setSessionOn] = useState(true);
@@ -50,13 +52,20 @@ export function MotionTracker({
     [exerciseId, exerciseName],
   );
   const precise = isPreciseTracker(exerciseId, exerciseName);
+  const setup = useMemo(
+    () => getSetupTips(exerciseId, exerciseName),
+    [exerciseId, exerciseName],
+  );
 
-  const { stats, processFrame, resetSession, pauseCounting, resumeCounting } =
+  const { stats, processFrame, resetSession, pauseCounting, resumeCounting, skipRest } =
     useExerciseSession({
       tracker,
       active: sessionOn && !finished,
       targetSets,
       targetReps,
+      restSec,
+      setupTip: setup.tip,
+      setupPose: setup.startPose,
     });
 
   const { videoRef, ready, error, lowConfidence, landmarks, fps, facingMode, switching, toggleFacing } =
@@ -365,22 +374,59 @@ export function MotionTracker({
         ) : null}
 
         {!stats.calibrated && ready ? (
-          <div className="absolute inset-x-0 top-16 z-[5] px-4 md:top-0 md:bg-gradient-to-b md:from-black/70 md:to-transparent md:p-4 md:pt-4">
-            <p className="text-sm font-medium text-white drop-shadow">
-              Hold still — locking onto your pose…
-            </p>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/20">
-              <div
-                className="h-full rounded-full bg-[var(--fit-accent)] transition-all"
-                style={{
-                  width: `${Math.round(stats.calibrationProgress * 100)}%`,
-                }}
-              />
+          <div className="absolute inset-x-0 top-16 z-[6] px-3 md:top-0 md:bg-gradient-to-b md:from-black/80 md:to-transparent md:p-4 md:pt-4">
+            <div className="rounded-2xl border border-white/20 bg-black/55 px-3 py-3 backdrop-blur-md md:max-w-md">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--fit-accent)]">
+                Setup coach ·{" "}
+                {stats.setupPhase === "framing" ? "1 / 2 Frame" : "2 / 2 Start pose"}
+              </p>
+              <p className="mt-1 text-sm font-medium text-white">{stats.setupTip}</p>
+              <p className="mt-1 text-xs text-white/75">{stats.setupPose}</p>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/20">
+                <div
+                  className="h-full rounded-full bg-[var(--fit-accent)] transition-all"
+                  style={{
+                    width: `${Math.round(stats.calibrationProgress * 100)}%`,
+                  }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-white/90">{stats.cue}</p>
             </div>
           </div>
         ) : null}
 
-        {ready ? (
+        {stats.resting ? (
+          <div className="absolute inset-0 z-[8] flex items-center justify-center bg-black/55 px-4">
+            <div className="w-full max-w-sm rounded-2xl border border-white/20 bg-black/70 px-5 py-6 text-center backdrop-blur-md">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                Rest between sets
+              </p>
+              <p className="mt-2 font-display text-5xl font-semibold text-white">
+                {stats.restSecLeft}
+              </p>
+              <p className="mt-2 text-sm text-white/80">
+                Set {stats.setsCompleted}/{targetSets} done · shake out, then go
+              </p>
+              <button
+                type="button"
+                onClick={skipRest}
+                className="mt-4 rounded-full bg-[var(--fit-accent)] px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                Skip rest — start next set
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {stats.tempoCue && stats.calibrated && !stats.resting ? (
+          <div className="pointer-events-none absolute inset-x-3 top-[4.5rem] z-[7] md:top-3">
+            <div className="rounded-xl border border-amber-300/40 bg-amber-500/20 px-3 py-2 text-center text-xs font-semibold text-amber-50 backdrop-blur-md">
+              {stats.tempoCue}
+            </div>
+          </div>
+        ) : null}
+
+        {ready && !stats.resting ? (
           <CoachPanel
             variant="overlay"
             cue={llmCoach.displayCue || stats.cue}
