@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useCoachVoice } from "../hooks/useCoachVoice";
 
 export type CoachTone = "calibrating" | "good" | "adjust" | "wrong" | "lost";
 
@@ -41,13 +40,13 @@ export function deriveTone(params: {
 }): CoachTone {
   const { calibrated, lowConfidence, formOk, metrics, cue, issueLandmarks } =
     params;
-  if (!calibrated) return "calibrating";
   if (lowConfidence) return "lost";
   const mismatch =
     metrics.mismatch === 1 ||
     metrics.plank === 1 ||
     /push-up|looks like|switch to|instead|hang and pull/i.test(cue);
   if (mismatch) return "wrong";
+  if (!calibrated) return "calibrating";
   if (!formOk || (issueLandmarks?.length ?? 0) > 0) return "adjust";
   if (/lower|bend|deeper|control|return|keep|visible|full range/i.test(cue)) {
     return "adjust";
@@ -202,9 +201,6 @@ export function CoachPanel({
     issueBodyParts,
     metrics,
   ]);
-
-  // Voice alert when the red banner is up (ElevenLabs + browser fallback)
-  useCoachVoice(visible, stableCue);
 
   if (!visible || !alertTone) return null;
 
