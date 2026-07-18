@@ -7,6 +7,8 @@ export type TrackerResult = {
   repCompleted: boolean;
   cues: string[];
   formOk: boolean;
+  /** BlazePose landmark indices to highlight in red when form is wrong */
+  issueLandmarks?: number[];
   metrics: Record<string, number>;
   ready: boolean;
 };

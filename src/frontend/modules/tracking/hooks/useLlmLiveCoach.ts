@@ -1,74 +1,133 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { apiPost } from "@/shared/services/http";
+import { buildLocalSuggestion } from "../lib/pose/formHighlights";
 
 type LiveCoachState = {
   displayCue: string;
+  suggestion: string;
   aiGenerated: boolean;
   loading: boolean;
 };
 
-const THROTTLE_MS = 14_000;
-/** Keep last LLM/rule cue while raw isWrong flickers off briefly */
-const CLEAR_HOLD_MS = 1500;
+const THROTTLE_MS = 5_000;
+const CLEAR_HOLD_MS = 1200;
 
 /**
- * When form is wrong, ask Cursor LLM to rewrite the alert (throttled).
- * Pose detection stays local/rule-based for speed.
+ * Instant local suggestion + Cursor LLM rewrite within ~5 seconds.
  */
 export function useLlmLiveCoach(params: {
   enabled: boolean;
-  isWrong: boolean;
+  isFormIssue: boolean;
   exerciseName: string;
   ruleCue: string;
   formScore: number;
   phase: string;
   metrics: Record<string, number>;
   formOk: boolean;
+  issueBodyParts: string[];
+  wholeExerciseWrong: boolean;
 }) {
   const {
     enabled,
-    isWrong,
+    isFormIssue,
     exerciseName,
     ruleCue,
     formScore,
     phase,
     metrics,
     formOk,
+    issueBodyParts,
+    wholeExerciseWrong,
   } = params;
 
-  const [state, setState] = useState<LiveCoachState>({
+  const bodyPartsKey = issueBodyParts.join(",");
+
+  const localSuggestion = useMemo(
+    () =>
+      buildLocalSuggestion(
+        ruleCue,
+        issueBodyParts,
+        wholeExerciseWrong,
+        exerciseName,
+      ),
+    [ruleCue, bodyPartsKey, wholeExerciseWrong, exerciseName, issueBodyParts],
+  );
+
+  const [state, setState] = useState<LiveCoachState>(() => ({
     displayCue: ruleCue,
+    suggestion: buildLocalSuggestion(
+      ruleCue,
+      issueBodyParts,
+      wholeExerciseWrong,
+      exerciseName,
+    ),
     aiGenerated: false,
     loading: false,
-  });
+  }));
 
   const lastFetchRef = useRef(0);
   const inFlightRef = useRef(false);
   const lastKeyRef = useRef("");
   const requestIdRef = useRef(0);
   const clearTimerRef = useRef<number | null>(null);
-  const latestRef = useRef({ formScore, phase, metrics, formOk, ruleCue });
-  latestRef.current = { formScore, phase, metrics, formOk, ruleCue };
+  const latestRef = useRef({
+    formScore,
+    phase,
+    metrics,
+    formOk,
+    ruleCue,
+    localSuggestion,
+    issueBodyParts,
+  });
+  latestRef.current = {
+    formScore,
+    phase,
+    metrics,
+    formOk,
+    ruleCue,
+    localSuggestion,
+    issueBodyParts,
+  };
+
+  // Instant local suggestion when form breaks — skip redundant updates
+  useEffect(() => {
+    if (!enabled || !isFormIssue) return;
+    setState((s) => {
+      const nextCue = ruleCue || s.displayCue;
+      if (s.displayCue === nextCue && s.suggestion === localSuggestion) return s;
+      return {
+        ...s,
+        displayCue: nextCue,
+        suggestion: localSuggestion,
+      };
+    });
+  }, [enabled, isFormIssue, ruleCue, localSuggestion]);
 
   useEffect(() => {
-    if (!enabled) {
-      if (clearTimerRef.current) window.clearTimeout(clearTimerRef.current);
-      setState({ displayCue: ruleCue, aiGenerated: false, loading: false });
-      return;
-    }
+    if (!enabled) return;
 
-    if (!isWrong) {
-      // Don't wipe the cue instantly — hold through brief recoveries
+    if (!isFormIssue) {
       if (clearTimerRef.current) window.clearTimeout(clearTimerRef.current);
       clearTimerRef.current = window.setTimeout(() => {
-        setState((s) => ({
-          ...s,
-          displayCue: ruleCue,
-          aiGenerated: false,
-          loading: false,
-        }));
+        setState((s) => {
+          if (
+            s.displayCue === ruleCue &&
+            s.suggestion === localSuggestion &&
+            !s.aiGenerated &&
+            !s.loading
+          ) {
+            return s;
+          }
+          return {
+            ...s,
+            displayCue: ruleCue,
+            suggestion: localSuggestion,
+            aiGenerated: false,
+            loading: false,
+          };
+        });
       }, CLEAR_HOLD_MS);
       return;
     }
@@ -78,17 +137,7 @@ export function useLlmLiveCoach(params: {
       clearTimerRef.current = null;
     }
 
-    // Prefer keeping a stable AI cue; only fall back to rule text when empty
-    setState((s) => ({
-      displayCue:
-        s.aiGenerated && s.displayCue && s.displayCue.length > 8
-          ? s.displayCue
-          : ruleCue || s.displayCue,
-      aiGenerated: s.aiGenerated,
-      loading: s.loading,
-    }));
-
-    const key = `${exerciseName}::${ruleCue}`;
+    const key = `${exerciseName}::${ruleCue}::${bodyPartsKey}`;
     const now = Date.now();
     if (
       inFlightRef.current ||
@@ -101,7 +150,7 @@ export function useLlmLiveCoach(params: {
     lastFetchRef.current = now;
     inFlightRef.current = true;
     const reqId = ++requestIdRef.current;
-    setState((s) => ({ ...s, loading: true }));
+    setState((s) => (s.loading ? s : { ...s, loading: true }));
 
     const snap = latestRef.current;
     void apiPost<{ alert: string; aiGenerated: boolean }>("/api/coach/live", {
@@ -109,13 +158,18 @@ export function useLlmLiveCoach(params: {
       ruleCue: snap.ruleCue,
       formScore: snap.formScore,
       phase: snap.phase,
-      metrics: snap.metrics,
+      metrics: {
+        ...snap.metrics,
+        bodyParts: snap.issueBodyParts.join(", "),
+      },
       formOk: snap.formOk,
     })
       .then((res) => {
         if (reqId !== requestIdRef.current) return;
+        const alert = res.alert || snap.ruleCue;
         setState({
-          displayCue: res.alert || snap.ruleCue,
+          displayCue: alert,
+          suggestion: alert,
           aiGenerated: Boolean(res.aiGenerated),
           loading: false,
         });
@@ -124,6 +178,7 @@ export function useLlmLiveCoach(params: {
         if (reqId !== requestIdRef.current) return;
         setState((s) => ({
           displayCue: snap.ruleCue || s.displayCue,
+          suggestion: snap.localSuggestion || s.suggestion,
           aiGenerated: false,
           loading: false,
         }));
@@ -131,7 +186,14 @@ export function useLlmLiveCoach(params: {
       .finally(() => {
         inFlightRef.current = false;
       });
-  }, [enabled, isWrong, exerciseName, ruleCue]);
+  }, [
+    enabled,
+    isFormIssue,
+    exerciseName,
+    ruleCue,
+    bodyPartsKey,
+    localSuggestion,
+  ]);
 
   useEffect(() => {
     return () => {

@@ -4,7 +4,11 @@ import {
   pickArmSide,
   type Side,
 } from "../lib/pose/joints";
-import type { Landmark } from "../lib/pose/landmarks";
+import { PoseLandmark, type Landmark } from "../lib/pose/landmarks";
+import {
+  mergeIssueLandmarks,
+  sideArmLandmarks,
+} from "../lib/pose/formHighlights";
 import { AngleRepFsm } from "../lib/pose/repFsm";
 import { EmaSmoother } from "../lib/pose/smoothing";
 import { wrongExerciseGate, resetWrongExerciseGate } from "./exerciseGate";
@@ -48,6 +52,7 @@ export function createBicepCurlTracker(): ExerciseTracker {
 
       const cues: string[] = [];
       let formOk = true;
+      const issueLandmarks: number[] = [];
 
       if (!lockedSide) {
         lockedSide = pickArmSide(landmarks);
@@ -86,14 +91,28 @@ export function createBicepCurlTracker(): ExerciseTracker {
       if (shallow) {
         cues.push("Curl higher — hand toward shoulder");
         formOk = false;
+        issueLandmarks.push(...sideArmLandmarks(lockedSide));
       }
       if (elbowDrift > 0.1) {
         cues.push("Pin elbows to your sides");
         formOk = false;
+        issueLandmarks.push(
+          lockedSide === "left"
+            ? PoseLandmark.LEFT_ELBOW
+            : PoseLandmark.RIGHT_ELBOW,
+        );
       }
       if (swinging) {
         cues.push("Don't swing — keep upper arms still");
         formOk = false;
+        issueLandmarks.push(
+          lockedSide === "left"
+            ? PoseLandmark.LEFT_SHOULDER
+            : PoseLandmark.RIGHT_SHOULDER,
+          lockedSide === "left"
+            ? PoseLandmark.LEFT_ELBOW
+            : PoseLandmark.RIGHT_ELBOW,
+        );
       }
 
       if (fsm.phase === "idle") {
@@ -110,6 +129,7 @@ export function createBicepCurlTracker(): ExerciseTracker {
         repCompleted: repCompleted && formOk,
         cues: cues.slice(0, 2),
         formOk,
+        issueLandmarks: mergeIssueLandmarks(issueLandmarks),
         metrics: {
           elbowAngle: Math.round(elbow),
           elbowDrift: Math.round(elbowDrift * 100),

@@ -4,8 +4,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Landmark } from "../lib/pose/landmarks";
 import type { ExerciseTracker, TrackerResult } from "../exercises/types";
 import type { PoseFrameMeta } from "./usePoseCamera";
+import {
+  bodyPartLabels,
+  FULL_BODY_SKELETON,
+  isWholeExerciseWrong,
+} from "../lib/pose/formHighlights";
+import {
+  classifyPose,
+  isPoseCompatible,
+  mismatchCue,
+  resolveExpectedFamily,
+} from "../exercises/movementFamily";
 
 const CALIBRATION_MS = 2000;
+const EMPTY_LANDMARKS: readonly number[] = [];
+const EMPTY_METRICS: Record<string, number> = {};
+const EMPTY_BODY_PARTS: readonly string[] = [];
 
 export type SessionStats = {
   reps: number;
@@ -22,6 +36,12 @@ export type SessionStats = {
   calibrationProgress: number;
   counting: boolean;
   formOk: boolean;
+  /** Landmark indices to highlight when form is wrong */
+  issueLandmarks: number[];
+  /** Human-readable regions for coach alerts */
+  issueBodyParts: string[];
+  /** Wrong exercise — highlight full skeleton */
+  wholeExerciseWrong: boolean;
   /** Increments on each completed rep — used to trigger coach flash */
   repPulse: number;
   /** Total reps completed across the whole session */
@@ -33,8 +53,11 @@ export function useExerciseSession(params: {
   active: boolean;
   targetSets: number;
   targetReps: number;
+  exerciseId?: string;
+  exerciseName?: string;
 }) {
-  const { tracker, active, targetSets, targetReps } = params;
+  const { tracker, active, targetSets, targetReps, exerciseId = "", exerciseName = "" } =
+    params;
 
   const [reps, setReps] = useState(0);
   const [setsCompleted, setSetsCompleted] = useState(0);
@@ -70,6 +93,10 @@ export function useExerciseSession(params: {
   targetRepsRef.current = targetReps;
   const targetSetsRef = useRef(targetSets);
   targetSetsRef.current = targetSets;
+  const expectedFamilyRef = useRef(
+    resolveExpectedFamily(exerciseId, exerciseName),
+  );
+  expectedFamilyRef.current = resolveExpectedFamily(exerciseId, exerciseName);
 
   useEffect(() => {
     if (!active) {
@@ -129,6 +156,36 @@ export function useExerciseSession(params: {
           lastProgressPublishRef.current = now;
           setCalibrationProgress(progress);
         }
+
+        // Early wrong-exercise preview while locking pose (~0.5s in)
+        if (progress >= 0.25) {
+          const classified = classifyPose(landmarks);
+          const expected = expectedFamilyRef.current;
+          if (
+            classified &&
+            expected !== "generic" &&
+            !isPoseCompatible(expected, classified)
+          ) {
+            const cue = mismatchCue(
+              expected,
+              classified.family,
+              exerciseName || "this exercise",
+            );
+            setLastResult({
+              phase: "idle",
+              repCompleted: false,
+              cues: [cue],
+              formOk: false,
+              issueLandmarks: FULL_BODY_SKELETON,
+              metrics: {
+                mismatch: 1,
+                plank: classified.isPlank ? 1 : 0,
+              },
+              ready: true,
+            });
+          }
+        }
+
         if (progress >= 1) {
           calibratedRef.current = true;
           countingRef.current = true;
@@ -205,7 +262,7 @@ export function useExerciseSession(params: {
         });
       }
     },
-    [active],
+    [active, exerciseName],
   );
 
   const formScore = useMemo(() => {
@@ -248,6 +305,16 @@ export function useExerciseSession(params: {
     }
   }, []);
 
+  const metrics = lastResult?.metrics ?? EMPTY_METRICS;
+  const issueLandmarks = lastResult?.issueLandmarks ?? EMPTY_LANDMARKS;
+  const wholeExerciseWrong = isWholeExerciseWrong(metrics);
+  const landmarkKey = issueLandmarks.join(",");
+
+  const issueBodyParts = useMemo(() => {
+    if (!landmarkKey) return EMPTY_BODY_PARTS as string[];
+    return bodyPartLabels(issueLandmarks as number[]);
+  }, [landmarkKey, issueLandmarks]);
+
   const stats: SessionStats = {
     reps,
     setsCompleted,
@@ -260,11 +327,14 @@ export function useExerciseSession(params: {
       lastResult?.cues[0] ??
       (calibrated ? "Looking good — keep going" : "Get fully in frame"),
     phase: lastResult?.phase ?? "idle",
-    metrics: lastResult?.metrics ?? {},
+    metrics,
     calibrated,
     calibrationProgress,
     counting,
     formOk: lastResult?.formOk ?? true,
+    issueLandmarks: issueLandmarks as number[],
+    issueBodyParts: issueBodyParts as string[],
+    wholeExerciseWrong,
     repPulse,
     totalReps,
   };

@@ -6,6 +6,11 @@ import {
   sideVisibility,
 } from "../lib/pose/joints";
 import { PoseLandmark, getLandmark, type Landmark } from "../lib/pose/landmarks";
+import {
+  mergeIssueLandmarks,
+  sideArmLandmarks,
+  sideCoreLandmarks,
+} from "../lib/pose/formHighlights";
 import { AngleRepFsm } from "../lib/pose/repFsm";
 import { EmaSmoother } from "../lib/pose/smoothing";
 import { wrongExerciseGate, resetWrongExerciseGate } from "./exerciseGate";
@@ -46,6 +51,7 @@ export function createPushupTracker(): ExerciseTracker {
 
       const cues: string[] = [];
       let formOk = true;
+      const issueLandmarks: number[] = [];
 
       const side = pickArmSide(landmarks);
       if (!side) {
@@ -93,17 +99,23 @@ export function createPushupTracker(): ExerciseTracker {
       if (wristShoulderY > 0.28) {
         cues.push("Place hands under shoulders");
         formOk = false;
+        issueLandmarks.push(...sideArmLandmarks(side));
       }
 
       const { repCompleted, shallow } = fsm.update(elbow, dtMs);
       if (shallow) {
         cues.push("Lower chest closer to the floor");
         formOk = false;
+        issueLandmarks.push(
+          side === "left" ? PoseLandmark.LEFT_ELBOW : PoseLandmark.RIGHT_ELBOW,
+          side === "left" ? PoseLandmark.LEFT_WRIST : PoseLandmark.RIGHT_WRIST,
+        );
       }
 
       if (ankle && bodyLine < 148) {
         cues.push("Straight body line — tighten your core");
         formOk = false;
+        issueLandmarks.push(...sideCoreLandmarks(side));
       }
 
       if (fsm.phase === "idle") {
@@ -119,6 +131,7 @@ export function createPushupTracker(): ExerciseTracker {
         repCompleted: repCompleted && formOk,
         cues: cues.slice(0, 2),
         formOk,
+        issueLandmarks: mergeIssueLandmarks(issueLandmarks),
         metrics: {
           elbowAngle: Math.round(elbow),
           bodyLine: Math.round(bodyLine),

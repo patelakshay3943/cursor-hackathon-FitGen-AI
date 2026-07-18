@@ -1,4 +1,9 @@
 import { PoseLandmark, getLandmark, type Landmark } from "../lib/pose/landmarks";
+import {
+  LOWER_BODY_LANDMARKS,
+  mergeIssueLandmarks,
+  UPPER_BODY_LANDMARKS,
+} from "../lib/pose/formHighlights";
 import { AngleRepFsm } from "../lib/pose/repFsm";
 import { EmaSmoother } from "../lib/pose/smoothing";
 import { wrongExerciseGate, resetWrongExerciseGate } from "./exerciseGate";
@@ -85,8 +90,12 @@ export function createGenericTracker(
 
       let formOk = !shallow;
       const cues: string[] = [];
+      const issueLandmarks: number[] = [];
       if (shallow) {
         cues.push("Use a fuller range of motion");
+        issueLandmarks.push(
+          ...(useArm ? UPPER_BODY_LANDMARKS : LOWER_BODY_LANDMARKS),
+        );
       } else if (fsm.phase === "idle") {
         cues.push(
           useArm
@@ -104,6 +113,7 @@ export function createGenericTracker(
         repCompleted: repCompleted && formOk,
         cues: cues.slice(0, 2),
         formOk,
+        issueLandmarks: mergeIssueLandmarks(issueLandmarks),
         metrics: {
           signal: Math.round(signal * 1000) / 1000,
           mode: useArm ? 1 : 0,

@@ -3,6 +3,10 @@ import {
   midPoint,
 } from "../lib/pose/joints";
 import { PoseLandmark, getLandmark, type Landmark } from "../lib/pose/landmarks";
+import {
+  LOWER_BODY_LANDMARKS,
+  mergeIssueLandmarks,
+} from "../lib/pose/formHighlights";
 import { AngleRepFsm } from "../lib/pose/repFsm";
 import { EmaSmoother } from "../lib/pose/smoothing";
 import { wrongExerciseGate, resetWrongExerciseGate } from "./exerciseGate";
@@ -45,6 +49,7 @@ export function createSquatTracker(): ExerciseTracker {
 
       const cues: string[] = [];
       let formOk = true;
+      const issueLandmarks: number[] = [];
 
       const kneeRaw = bilateralKneeAngle(landmarks);
       const lHip = getLandmark(landmarks, PoseLandmark.LEFT_HIP);
@@ -105,6 +110,7 @@ export function createSquatTracker(): ExerciseTracker {
           repCompleted: false,
           cues: ["Stand upright facing the camera for squats"],
           formOk: false,
+          issueLandmarks: LOWER_BODY_LANDMARKS,
           metrics: { mismatch: 1, kneeAngle: Math.round(kneeAngle) },
           ready: true,
         };
@@ -114,16 +120,29 @@ export function createSquatTracker(): ExerciseTracker {
       if (shallow) {
         cues.push("Go deeper — thighs closer to parallel");
         formOk = false;
+        issueLandmarks.push(
+          PoseLandmark.LEFT_KNEE,
+          PoseLandmark.RIGHT_KNEE,
+          PoseLandmark.LEFT_HIP,
+          PoseLandmark.RIGHT_HIP,
+        );
       }
 
       if (fsm.inDown || fsm.phase === "up") {
         if (valgus > 0.07) {
           cues.push("Keep knees tracking over toes");
           formOk = false;
+          issueLandmarks.push(PoseLandmark.LEFT_KNEE, PoseLandmark.RIGHT_KNEE);
         }
         if (torsoLean > 42) {
           cues.push("Chest up — reduce forward lean");
           formOk = false;
+          issueLandmarks.push(
+            PoseLandmark.LEFT_SHOULDER,
+            PoseLandmark.RIGHT_SHOULDER,
+            PoseLandmark.LEFT_HIP,
+            PoseLandmark.RIGHT_HIP,
+          );
         }
       }
 
@@ -140,6 +159,7 @@ export function createSquatTracker(): ExerciseTracker {
         repCompleted: repCompleted && formOk,
         cues: cues.slice(0, 2),
         formOk,
+        issueLandmarks: mergeIssueLandmarks(issueLandmarks),
         metrics: {
           kneeAngle: Math.round(kneeAngle),
           torsoLean: Math.round(torsoLean),

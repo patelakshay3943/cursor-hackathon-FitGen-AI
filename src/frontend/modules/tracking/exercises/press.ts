@@ -3,6 +3,9 @@ import {
   midPoint,
 } from "../lib/pose/joints";
 import { PoseLandmark, getLandmark, type Landmark } from "../lib/pose/landmarks";
+import {
+  mergeIssueLandmarks,
+} from "../lib/pose/formHighlights";
 import { AngleRepFsm } from "../lib/pose/repFsm";
 import { EmaSmoother } from "../lib/pose/smoothing";
 import { wrongExerciseGate, resetWrongExerciseGate } from "./exerciseGate";
@@ -77,6 +80,7 @@ export function createPressTracker(
 
       let formOk = true;
       const cues: string[] = [];
+      const issueLandmarks: number[] = [];
 
       if (
         midWrist &&
@@ -87,6 +91,12 @@ export function createPressTracker(
         if (midWrist.y > midShoulder.y + 0.05) {
           cues.push("Press the weights upward to lockout");
           formOk = false;
+          issueLandmarks.push(
+            PoseLandmark.LEFT_WRIST,
+            PoseLandmark.RIGHT_WRIST,
+            PoseLandmark.LEFT_SHOULDER,
+            PoseLandmark.RIGHT_SHOULDER,
+          );
         }
       }
 
@@ -94,6 +104,10 @@ export function createPressTracker(
       if (shallow) {
         cues.push("Lower further — more elbow bend at the bottom");
         formOk = false;
+        issueLandmarks.push(
+          PoseLandmark.LEFT_ELBOW,
+          PoseLandmark.RIGHT_ELBOW,
+        );
       }
 
       if (fsm.phase === "idle") {
@@ -116,6 +130,7 @@ export function createPressTracker(
         repCompleted: counted,
         cues: cues.slice(0, 2),
         formOk,
+        issueLandmarks: mergeIssueLandmarks(issueLandmarks),
         metrics: {
           elbow: Math.round(elbow),
           lying: classified?.isLyingPress ? 1 : 0,

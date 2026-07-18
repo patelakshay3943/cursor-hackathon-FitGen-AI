@@ -1,4 +1,5 @@
 import type { Landmark } from "../lib/pose/landmarks";
+import { FULL_BODY_SKELETON } from "../lib/pose/formHighlights";
 import type { TrackerPhase, TrackerResult } from "./types";
 import {
   classifyPose,
@@ -15,6 +16,7 @@ type LockState = {
   cue: string;
   detected: number;
   plank: number;
+  issueLandmarks: number[];
 };
 
 let lock: LockState | null = null;
@@ -37,12 +39,14 @@ function blockedResult(
   detected: number,
   plank: number,
   phase: TrackerPhase,
+  issueLandmarks: number[],
 ): TrackerResult {
   return {
     phase,
     repCompleted: false,
     cues: [cue],
     formOk: false,
+    issueLandmarks,
     metrics: {
       mismatch: 1,
       plank,
@@ -68,13 +72,15 @@ export function wrongExerciseGate(
 
   if (classified && !isPoseCompatible(expected, classified)) {
     const cue = mismatchCue(expected, classified.family, exerciseName);
+    const issueLandmarks = FULL_BODY_SKELETON;
     lock = {
       remainingMs: LOCK_CLEAR_MS,
       cue,
       detected: detectedCode(classified.family),
       plank: classified.isPlank ? 1 : 0,
+      issueLandmarks,
     };
-    return blockedResult(cue, lock.detected, lock.plank, "idle");
+    return blockedResult(cue, lock.detected, lock.plank, "idle", issueLandmarks);
   }
 
   // Still in sticky lock — do not count even if this frame looks ok
@@ -95,6 +101,7 @@ export function wrongExerciseGate(
       lock.detected,
       lock.plank,
       phase === "idle" ? "idle" : phase,
+      lock.issueLandmarks.length ? lock.issueLandmarks : FULL_BODY_SKELETON,
     );
   }
 

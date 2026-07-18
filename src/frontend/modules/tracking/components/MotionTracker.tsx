@@ -9,7 +9,7 @@ import { usePoseCamera } from "../hooks/usePoseCamera";
 import { useExerciseSession } from "../hooks/useExerciseSession";
 import { useLlmLiveCoach } from "../hooks/useLlmLiveCoach";
 import { TrackingOverlay } from "./TrackingOverlay";
-import { CoachPanel, deriveTone } from "./CoachPanel";
+import { CoachPanel } from "./CoachPanel";
 import { buildSessionReview } from "../lib/sessionReview";
 
 type MotionTrackerProps = {
@@ -57,6 +57,8 @@ export function MotionTracker({
       active: sessionOn && !finished,
       targetSets,
       targetReps,
+      exerciseId,
+      exerciseName,
     });
 
   const { videoRef, ready, error, lowConfidence, landmarks, fps, facingMode, switching, toggleFacing } =
@@ -84,24 +86,23 @@ export function MotionTracker({
     };
   }, [finished]);
 
-  const isWrong =
-    deriveTone({
-      calibrated: stats.calibrated,
-      lowConfidence,
-      formOk: stats.formOk,
-      metrics: stats.metrics,
-      cue: stats.cue,
-    }) === "wrong";
+  const isFormIssue =
+    !lowConfidence &&
+    (stats.wholeExerciseWrong ||
+      !stats.formOk ||
+      stats.issueLandmarks.length > 0);
 
   const llmCoach = useLlmLiveCoach({
     enabled: sessionOn && !finished && ready,
-    isWrong,
+    isFormIssue,
     exerciseName,
     ruleCue: stats.cue,
     formScore: stats.formScore,
     phase: stats.phase,
     metrics: stats.metrics,
     formOk: stats.formOk,
+    issueBodyParts: stats.issueBodyParts,
+    wholeExerciseWrong: stats.wholeExerciseWrong,
   });
 
   useEffect(() => {
@@ -315,7 +316,13 @@ export function MotionTracker({
           muted
           autoPlay
         />
-        <TrackingOverlay video={videoEl} landmarks={landmarks} mirrored={mirrored} />
+        <TrackingOverlay
+          video={videoEl}
+          landmarks={landmarks}
+          issueLandmarks={stats.issueLandmarks}
+          wholeBodyWrong={stats.wholeExerciseWrong}
+          mirrored={mirrored}
+        />
 
         {/* Mobile top HUD */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/75 via-black/35 to-transparent px-3 pb-8 pt-[max(0.65rem,env(safe-area-inset-top))] md:hidden">
@@ -384,6 +391,9 @@ export function MotionTracker({
           <CoachPanel
             variant="overlay"
             cue={llmCoach.displayCue || stats.cue}
+            suggestion={llmCoach.suggestion}
+            issueBodyParts={stats.issueBodyParts}
+            wholeExerciseWrong={stats.wholeExerciseWrong}
             formOk={stats.formOk}
             calibrated={stats.calibrated}
             lowConfidence={lowConfidence}
