@@ -1,6 +1,6 @@
 # FitGen AI
 
-Progressive daily workout plan generator. Submit your profile, get **Day 1 instantly**, then unlock each next day as you complete workouts. Built with Next.js, PostgreSQL, and OpenAI on top of the [free-exercise-db](https://github.com/yuhonas/free-exercise-db) dataset.
+Progressive daily workout plan generator. Submit your profile, get **Day 1 instantly**, then unlock each next day as you complete workouts. Built with Next.js, PostgreSQL, and the Cursor SDK on top of the [free-exercise-db](https://github.com/yuhonas/free-exercise-db) dataset.
 
 ## Features
 
@@ -14,7 +14,7 @@ Progressive daily workout plan generator. Submit your profile, get **Day 1 insta
 
 - Next.js 16 (App Router) + TypeScript + Tailwind
 - PostgreSQL + Prisma 5
-- OpenAI (`gpt-4o-mini`) with JSON responses + local fallback if no API key
+- Cursor SDK (`composer-2.5` by default) for Day N workout JSON + local fallback if no API key
 
 ## Project structure
 
@@ -50,10 +50,12 @@ Set at least:
 
 ```
 DATABASE_URL=postgresql://fitgen:fitgen@localhost:5432/fitgen
-OPENAI_API_KEY=sk-...          # optional — falls back to rule-based picks
-OPENAI_MODEL=gpt-4o-mini
+CURSOR_API_KEY=cursor_...      # from Cursor Dashboard → Integrations; falls back to rules if missing
+CURSOR_MODEL=composer-2.5
 EXERCISE_IMAGE_BASE=https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises
 ```
+
+Plan generation may take tens of seconds on first run (Cursor agent startup).
 
 ### 3. Database
 

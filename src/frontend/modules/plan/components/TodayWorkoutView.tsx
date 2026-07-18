@@ -136,9 +136,9 @@ export function TodayWorkoutView({
             <LockedDayCard day={day} previousDayNumber={day.dayNumber - 1} />
           ) : (
             <>
-              <WorkoutDayCard day={day} />
+              <WorkoutDayCard day={day} planId={plan.planId} />
               {canComplete ? (
-                <div className="sticky bottom-4 z-10 rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)]/95 p-4 shadow-[0_12px_40px_rgba(20,32,27,0.12)] backdrop-blur">
+                <div className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)]/95 p-4 shadow-[0_12px_40px_rgba(20,32,27,0.12)] backdrop-blur">
                   <CompleteDayButton
                     dayNumber={day.dayNumber}
                     loading={completing}

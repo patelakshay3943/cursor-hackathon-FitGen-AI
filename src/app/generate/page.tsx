@@ -11,7 +11,7 @@ export default function GeneratePage() {
           Tell us about your training
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-[var(--fit-muted)]">
-          Five short steps. Then OpenAI builds Day 1 from exercises that match you in our
+          Five short steps. Then Cursor AI builds Day 1 from exercises that match you in our
           database — usually under a few seconds.
         </p>
       </div>

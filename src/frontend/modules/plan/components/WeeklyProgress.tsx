@@ -54,7 +54,7 @@ export function WeeklyProgress({
               Week {week}
               {isActiveWeek ? " · current" : ""}
             </p>
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
               {weekDays.map((day) => {
                 const selected = day.dayNumber === selectedDay;
                 const clickable = day.status !== "locked";
@@ -65,7 +65,7 @@ export function WeeklyProgress({
                     disabled={!clickable}
                     title={`Day ${day.dayNumber}: ${day.focus} (${statusLabel(day, currentDay)})`}
                     onClick={() => onSelectDay(day.dayNumber)}
-                    className={`flex flex-col items-center rounded-xl border px-1 py-2 text-[10px] transition ${
+                    className={`flex min-h-11 flex-col items-center justify-center rounded-xl border px-0.5 py-1.5 text-[9px] transition sm:min-h-0 sm:px-1 sm:py-2 sm:text-[10px] ${
                       selected
                         ? "border-[var(--fit-accent)] bg-[var(--fit-accent)] text-white"
                         : day.status === "completed"

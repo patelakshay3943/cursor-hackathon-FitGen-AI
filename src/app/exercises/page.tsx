@@ -166,23 +166,23 @@ export default function ExercisesPage() {
           {exercises.map((ex) => (
             <article
               key={ex.id}
-              className="group flex gap-3 overflow-hidden rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)] p-3 transition hover:border-[var(--fit-accent)]/40 hover:shadow-sm"
+              className="group flex flex-col gap-3 overflow-hidden rounded-2xl border border-[var(--fit-border)] bg-[var(--fit-surface)] p-3 transition hover:border-[var(--fit-accent)]/40 hover:shadow-sm sm:flex-row"
             >
               {ex.imageUrls[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={ex.imageUrls[0]}
                   alt={ex.name}
-                  className="h-24 w-28 shrink-0 rounded-xl object-cover transition group-hover:scale-[1.02]"
+                  className="h-36 w-full shrink-0 rounded-xl object-cover transition group-hover:scale-[1.02] sm:h-24 sm:w-28"
                   loading="lazy"
                 />
               ) : (
-                <div className="flex h-24 w-28 shrink-0 items-center justify-center rounded-xl bg-[var(--fit-bg)] text-xs text-[var(--fit-muted)]">
+                <div className="flex h-28 w-full shrink-0 items-center justify-center rounded-xl bg-[var(--fit-bg)] text-xs text-[var(--fit-muted)] sm:h-24 sm:w-28">
                   No image
                 </div>
               )}
-              <div className="min-w-0 py-0.5">
-                <h2 className="truncate font-medium text-[var(--fit-ink)]">{ex.name}</h2>
+              <div className="min-w-0 flex-1 py-0.5">
+                <h2 className="font-medium text-[var(--fit-ink)] sm:truncate">{ex.name}</h2>
                 <p className="mt-1 text-xs capitalize text-[var(--fit-muted)]">
                   {ex.level} · {ex.equipment || "any equipment"}
                 </p>

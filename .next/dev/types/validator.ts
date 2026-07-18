@@ -119,6 +119,33 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../src/app/track/[exerciseId]/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/track/[exerciseId]">> = Specific
+  const handler = {} as typeof import("../../../src/app/track/[exerciseId]/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/api/coach/live/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/coach/live">> = Specific
+  const handler = {} as typeof import("../../../src/app/api/coach/live/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/api/coach/summary/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/coach/summary">> = Specific
+  const handler = {} as typeof import("../../../src/app/api/coach/summary/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../src/app/api/exercises/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/exercises">> = Specific

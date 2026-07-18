@@ -12,6 +12,10 @@
   --fit-accent-hover: #0b614b;
   --fit-accent-soft: #e4f4ef;
   --fit-warn: #c45c26;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 @theme inline {
@@ -44,10 +48,23 @@ body {
     var(--fit-bg);
   color: var(--fit-ink);
   font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .font-display {
   font-family: var(--font-display), system-ui, sans-serif;
+}
+
+/* Immersive tracking stage on phones */
+.track-stage {
+  min-height: 100dvh;
+}
+
+@media (min-width: 768px) {
+  .track-stage {
+    min-height: 0;
+  }
 }
 
 @keyframes fit-fade-up {
@@ -89,6 +106,79 @@ body {
   }
 }
 
+@keyframes coach-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes coach-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.7;
+  }
+}
+
+@keyframes coach-rep-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 18px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes coach-wrong-flash {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.coach-msg {
+  animation: coach-msg-in 0.28s ease-out both;
+}
+
+.coach-dot {
+  animation: coach-dot-pulse 1.4s ease-in-out infinite;
+}
+
+.coach-flash-rep {
+  animation: coach-rep-flash 0.7s ease-out;
+}
+
+.coach-flash-wrong {
+  animation: coach-wrong-flash 0.45s ease-in-out;
+}
+
+.coach-glow-good {
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.15), 0 12px 40px -18px rgba(15, 122, 95, 0.45);
+}
+
+.coach-glow-adjust {
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.18), 0 12px 40px -18px rgba(196, 92, 38, 0.35);
+}
+
+.coach-glow-wrong {
+  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.2), 0 12px 40px -16px rgba(225, 29, 72, 0.4);
+}
+
 .fit-fade-up {
   animation: fit-fade-up 0.45s ease-out both;
 }
@@ -121,7 +211,11 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .fit-fade-up,
   .fit-fade-in,
-  .fit-skeleton {
+  .fit-skeleton,
+  .coach-msg,
+  .coach-dot,
+  .coach-flash-rep,
+  .coach-flash-wrong {
     animation: none;
   }
 }

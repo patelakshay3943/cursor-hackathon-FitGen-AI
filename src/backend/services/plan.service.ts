@@ -11,7 +11,7 @@ import {
   filterExercisesForProfile,
   getExercisesByIds,
 } from "./exercise.service";
-import { generateDayWorkout } from "./openai-day-plan.service";
+import { generateDayWorkout } from "./cursor-day-plan.service";
 import { validateAndSanitizeWorkout } from "./plan-validation.service";
 import { getDayFocus } from "./split-template.service";
 import { buildWeekSkeleton, TOTAL_DAYS } from "./week-skeleton.service";

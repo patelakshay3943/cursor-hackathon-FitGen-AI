@@ -19,7 +19,7 @@ export function useGeneratePlan() {
       try {
         setStep("Filtering exercises from database…");
         await new Promise((r) => setTimeout(r, 150));
-        setStep("OpenAI is building Day 1…");
+        setStep("Cursor AI is building Day 1…");
         const result = await apiPost<PlanResponse>("/api/plans/generate", profile);
         savePlanId(result.planId);
         setStep("Day 1 ready!");

@@ -26,23 +26,23 @@ export default function HomePage() {
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--fit-accent)]">
             Your AI training partner
           </p>
-          <h1 className="font-display text-5xl font-semibold leading-[1.02] tracking-tight text-[var(--fit-ink)] sm:text-6xl">
+          <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-[var(--fit-ink)] sm:text-6xl">
             {APP_NAME}
           </h1>
           <p className="max-w-lg text-base leading-relaxed text-[var(--fit-muted)] sm:text-lg">
-            A short assessment. Exercises from our database. OpenAI builds Day 1 — unlock each
+            A short assessment. Exercises from our database. Cursor AI builds Day 1 — unlock each
             next day as you train.
           </p>
-          <div className="flex flex-wrap gap-3 pt-1">
+          <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap">
             <Link
               href={ROUTES.generate}
-              className="inline-flex items-center justify-center rounded-full bg-[var(--fit-accent)] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-[var(--fit-accent)]/25 transition hover:bg-[var(--fit-accent-hover)]"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[var(--fit-accent)] px-6 py-3.5 text-sm font-semibold text-white shadow-md shadow-[var(--fit-accent)]/25 transition hover:bg-[var(--fit-accent-hover)] sm:w-auto"
             >
               Start free assessment
             </Link>
             <Link
               href={ROUTES.exercises}
-              className="inline-flex items-center justify-center rounded-full border border-[var(--fit-border)] bg-[var(--fit-surface)] px-6 py-3 text-sm font-semibold text-[var(--fit-ink)] transition hover:border-[var(--fit-accent)]"
+              className="inline-flex w-full items-center justify-center rounded-full border border-[var(--fit-border)] bg-[var(--fit-surface)] px-6 py-3.5 text-sm font-semibold text-[var(--fit-ink)] transition hover:border-[var(--fit-accent)] sm:w-auto"
             >
               Explore exercises
             </Link>

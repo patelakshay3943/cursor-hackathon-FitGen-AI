@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, Outfit, Geist_Mono } from "next/font/google";
 import { StoreProvider } from "@/store/StoreProvider";
 import { Navbar } from "@/shared/components/layout/Navbar";
@@ -25,6 +25,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FitGen AI",
   description: "AI workout plans from your assessment — unlock one day at a time",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "FitGen",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3f6f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c1210" },
+  ],
 };
 
 export default function RootLayout({
@@ -37,7 +53,7 @@ export default function RootLayout({
       lang="en"
       className={`${display.variable} ${body.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col pb-[env(safe-area-inset-bottom)]">
         <StoreProvider>
           <Navbar />
           {children}

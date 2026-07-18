@@ -18,7 +18,7 @@ export function LockedDayCard({ day, previousDayNumber }: LockedDayCardProps) {
       </p>
       <p className="mx-auto mt-3 max-w-sm text-sm text-[var(--fit-muted)]">
         {previousDayNumber
-          ? `Complete Day ${previousDayNumber} to unlock. OpenAI will then generate this workout from your exercise database.`
+          ? `Complete Day ${previousDayNumber} to unlock. Cursor AI will then generate this workout from your exercise database.`
           : "Complete the previous day to unlock this workout."}
       </p>
     </div>

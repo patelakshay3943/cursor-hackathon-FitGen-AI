@@ -31,10 +31,11 @@
     ]
   },
   "dependencies": {
+    "@cursor/sdk": "^1.0.23",
+    "@mediapipe/tasks-vision": "^0.10.35",
     "@prisma/client": "^5.22.0",
     "@reduxjs/toolkit": "^2.11.2",
     "next": "16.2.1",
-    "openai": "^6.48.0",
     "prisma": "^5.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -54,6 +55,7 @@
     "eslint-config-next": "16.2.1",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
+    "ignore-loader": "^0.1.2",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "tailwindcss": "^4",

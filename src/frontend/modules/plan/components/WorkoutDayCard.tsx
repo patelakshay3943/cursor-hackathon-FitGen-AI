@@ -5,9 +5,10 @@ import { ExerciseCard } from "./ExerciseCard";
 
 type WorkoutDayCardProps = {
   day: PlanDay;
+  planId?: string;
 };
 
-export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
+export function WorkoutDayCard({ day, planId }: WorkoutDayCardProps) {
   if (day.isRestDay) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--fit-border)] bg-[var(--fit-surface)] px-4 py-10 text-center">
@@ -27,7 +28,7 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
   if (day.status === "generating") {
     return (
       <div className="rounded-2xl border border-[var(--fit-border)] px-4 py-10 text-center">
-        <p className="text-sm text-[var(--fit-muted)]">OpenAI is generating this workout…</p>
+        <p className="text-sm text-[var(--fit-muted)]">Cursor AI is generating this workout…</p>
       </div>
     );
   }
@@ -66,7 +67,12 @@ export function WorkoutDayCard({ day }: WorkoutDayCardProps) {
       ) : null}
       <div className="space-y-3">
         {exercises.map((ex, i) => (
-          <ExerciseCard key={ex.exerciseId} exercise={ex} index={i} />
+          <ExerciseCard
+            key={ex.exerciseId}
+            exercise={ex}
+            index={i}
+            planId={planId}
+          />
         ))}
       </div>
     </div>

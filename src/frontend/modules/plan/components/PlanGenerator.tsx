@@ -15,7 +15,7 @@ export function PlanGenerator() {
             <div>
               <p className="font-semibold text-[var(--fit-ink)]">{step || "Working…"}</p>
               <p className="mt-0.5 text-[var(--fit-muted)]">
-                Filtering your DB exercises, then calling OpenAI for Day 1…
+                Filtering your DB exercises, then calling Cursor AI for Day 1…
               </p>
             </div>
           </div>
