@@ -1,5 +1,5 @@
 import EmbeddedPostgres from "embedded-postgres";
-import { mkdirSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -16,7 +16,10 @@ const pg = new EmbeddedPostgres({
   persistent: true,
 });
 
-await pg.initialise();
+const alreadyInitialised = existsSync(join(databaseDir, "PG_VERSION"));
+if (!alreadyInitialised) {
+  await pg.initialise();
+}
 await pg.start();
 
 try {
