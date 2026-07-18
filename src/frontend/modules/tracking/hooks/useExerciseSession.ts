@@ -16,19 +16,15 @@ import {
   resolveExpectedFamily,
 } from "../exercises/movementFamily";
 
-<<<<<<< HEAD
-const CALIBRATION_MS = 2000;
+const FRAME_CALIBRATION_MS = 1800;
+const SETUP_HOLD_MS = 2200;
+const TEMPO_MIN_DOWN_MS = 1500;
+const DEFAULT_REST_SEC = 45;
 const EMPTY_LANDMARKS: readonly number[] = [];
 const EMPTY_METRICS: Record<string, number> = {};
 const EMPTY_BODY_PARTS: readonly string[] = [];
-=======
-const FRAME_CALIBRATION_MS = 1800;
-const SETUP_HOLD_MS = 2200;
-const TEMPO_MIN_DOWN_MS = 1500; // ~2s down cue if faster
-const DEFAULT_REST_SEC = 45;
 
 export type SetupPhase = "framing" | "pose" | "ready" | "done";
->>>>>>> 9a45288a7de7274ef0dc5812aed67d1a802805c7
 
 export type SessionStats = {
   reps: number;
@@ -45,16 +41,9 @@ export type SessionStats = {
   calibrationProgress: number;
   counting: boolean;
   formOk: boolean;
-<<<<<<< HEAD
-  /** Landmark indices to highlight when form is wrong */
   issueLandmarks: number[];
-  /** Human-readable regions for coach alerts */
   issueBodyParts: string[];
-  /** Wrong exercise — highlight full skeleton */
   wholeExerciseWrong: boolean;
-  /** Increments on each completed rep — used to trigger coach flash */
-=======
->>>>>>> 9a45288a7de7274ef0dc5812aed67d1a802805c7
   repPulse: number;
   totalReps: number;
   /** Setup coach before first rep */
@@ -73,13 +62,8 @@ export function useExerciseSession(params: {
   active: boolean;
   targetSets: number;
   targetReps: number;
-<<<<<<< HEAD
   exerciseId?: string;
   exerciseName?: string;
-}) {
-  const { tracker, active, targetSets, targetReps, exerciseId = "", exerciseName = "" } =
-    params;
-=======
   restSec?: number;
   setupTip?: string;
   setupPose?: string;
@@ -89,11 +73,12 @@ export function useExerciseSession(params: {
     active,
     targetSets,
     targetReps,
+    exerciseId = "",
+    exerciseName = "",
     restSec = DEFAULT_REST_SEC,
     setupTip = "Step back · full body visible",
     setupPose = "Take your starting pose and hold still",
   } = params;
->>>>>>> 9a45288a7de7274ef0dc5812aed67d1a802805c7
 
   const [reps, setReps] = useState(0);
   const [setsCompleted, setSetsCompleted] = useState(0);
@@ -142,15 +127,12 @@ export function useExerciseSession(params: {
   targetRepsRef.current = targetReps;
   const targetSetsRef = useRef(targetSets);
   targetSetsRef.current = targetSets;
-<<<<<<< HEAD
   const expectedFamilyRef = useRef(
     resolveExpectedFamily(exerciseId, exerciseName),
   );
   expectedFamilyRef.current = resolveExpectedFamily(exerciseId, exerciseName);
-=======
   const restSecRef = useRef(restSec);
   restSecRef.current = restSec;
->>>>>>> 9a45288a7de7274ef0dc5812aed67d1a802805c7
 
   useEffect(() => {
     if (!active) {
@@ -274,47 +256,46 @@ export function useExerciseSession(params: {
           return;
         }
 
-<<<<<<< HEAD
-        // Early wrong-exercise preview while locking pose (~0.5s in)
-        if (progress >= 0.25) {
-          const classified = classifyPose(landmarks);
-          const expected = expectedFamilyRef.current;
-          if (
-            classified &&
-            expected !== "generic" &&
-            !isPoseCompatible(expected, classified)
-          ) {
-            const cue = mismatchCue(
-              expected,
-              classified.family,
-              exerciseName || "this exercise",
-            );
+        // Framing OK — require starting pose hold (tracker ready + formOk)
+        const peek = currentTracker.update(landmarks, dt);
+        const classified = classifyPose(landmarks);
+        const expected = expectedFamilyRef.current;
+        const wrongExercise =
+          classified &&
+          expected !== "generic" &&
+          !isPoseCompatible(expected, classified);
+
+        if (wrongExercise) {
+          poseHoldMsRef.current = Math.max(0, poseHoldMsRef.current - dt * 2);
+          setupPhaseRef.current = "pose";
+          setSetupPhase("pose");
+          setCalibrationProgress(0.45);
+          if (now - lastProgressPublishRef.current > 100) {
+            lastProgressPublishRef.current = now;
             setLastResult({
               phase: "idle",
               repCompleted: false,
-              cues: [cue],
+              cues: [
+                mismatchCue(
+                  expected,
+                  classified!.family,
+                  exerciseName || "this exercise",
+                ),
+              ],
               formOk: false,
               issueLandmarks: FULL_BODY_SKELETON,
               metrics: {
                 mismatch: 1,
-                plank: classified.isPlank ? 1 : 0,
+                plank: classified!.isPlank ? 1 : 0,
               },
               ready: true,
             });
           }
+          return;
         }
 
-        if (progress >= 1) {
-          calibratedRef.current = true;
-          countingRef.current = true;
-          setCalibrated(true);
-          setCounting(true);
-          setCalibrationProgress(1);
-          currentTracker.reset();
-=======
-        // Framing OK — require starting pose hold (tracker ready + formOk)
-        const peek = currentTracker.update(landmarks, dt);
-        const poseOk = peek.ready && peek.formOk && peek.metrics.mismatch !== 1;
+        const poseOk =
+          peek.ready && peek.formOk && peek.metrics.mismatch !== 1;
 
         if (poseOk) {
           poseHoldMsRef.current += dt;
@@ -359,11 +340,11 @@ export function useExerciseSession(params: {
               repCompleted: false,
               cues: [peek.cues[0] || "Match the start pose, then hold"],
               formOk: false,
+              issueLandmarks: peek.issueLandmarks,
               metrics: peek.metrics,
               ready: false,
             });
           }
->>>>>>> 9a45288a7de7274ef0dc5812aed67d1a802805c7
         }
         return;
       }
@@ -457,11 +438,7 @@ export function useExerciseSession(params: {
         }
       }
     },
-<<<<<<< HEAD
-    [active, exerciseName],
-=======
-    [active, beginRest],
->>>>>>> 9a45288a7de7274ef0dc5812aed67d1a802805c7
+    [active, beginRest, exerciseName],
   );
 
   const formScore = useMemo(() => {

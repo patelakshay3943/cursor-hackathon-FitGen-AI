@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useCoachVoice } from "../hooks/useCoachVoice";
 
 export type CoachTone = "calibrating" | "good" | "adjust" | "wrong" | "lost";
 
@@ -201,6 +202,9 @@ export function CoachPanel({
     issueBodyParts,
     metrics,
   ]);
+
+  // Voice alert when the red banner is up (ElevenLabs + browser fallback)
+  useCoachVoice(visible, stableCue);
 
   if (!visible || !alertTone) return null;
 

@@ -6,6 +6,11 @@ import { usePathname } from "next/navigation";
 import { APP_NAME } from "@/config/app";
 import { ROUTES, planPath } from "@/shared/constants";
 import { PLAN_STORAGE_EVENT, getStoredPlanId } from "@/modules/plan";
+import { getGoalAffirmation } from "@/modules/tracking/lib/affirmations";
+import {
+  PERSON_SESSION_EVENT,
+  getProfileFromSession,
+} from "@/shared/lib/sessionPerson";
 
 const linkClass =
   "whitespace-nowrap text-sm font-medium text-[var(--fit-muted)] transition hover:text-[var(--fit-ink)]";
@@ -13,16 +18,23 @@ const linkClass =
 export function Navbar() {
   const pathname = usePathname();
   const [planId, setPlanId] = useState<string | null>(null);
+  const [goalLabel, setGoalLabel] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const sync = () => setPlanId(getStoredPlanId());
+    const sync = () => {
+      setPlanId(getStoredPlanId());
+      const profile = getProfileFromSession();
+      setGoalLabel(profile ? getGoalAffirmation(profile).becoming : null);
+    };
     sync();
     window.addEventListener("storage", sync);
     window.addEventListener(PLAN_STORAGE_EVENT, sync);
+    window.addEventListener(PERSON_SESSION_EVENT, sync);
     return () => {
       window.removeEventListener("storage", sync);
       window.removeEventListener(PLAN_STORAGE_EVENT, sync);
+      window.removeEventListener(PERSON_SESSION_EVENT, sync);
     };
   }, []);
 
@@ -65,6 +77,11 @@ export function Navbar() {
           >
             Exercises
           </Link>
+          {goalLabel ? (
+            <span className="hidden rounded-full bg-[var(--fit-accent-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--fit-accent)] md:inline">
+              Becoming {goalLabel.toLowerCase()}
+            </span>
+          ) : null}
           <Link
             href={ROUTES.generate}
             className="ml-1 rounded-full bg-[var(--fit-accent)] px-3.5 py-1.5 text-xs font-semibold text-white"

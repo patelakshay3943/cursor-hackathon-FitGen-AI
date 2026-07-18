@@ -47,7 +47,9 @@ export default function HomePage() {
               Explore exercises
             </Link>
           </div>
-          <p className="text-xs text-[var(--fit-muted)]">No account needed · ~2 minutes to Day 1</p>
+          <p className="text-xs text-[var(--fit-muted)]">
+            No account needed · Your plan lives in this tab · ~2 minutes to Day 1
+          </p>
         </div>
       </section>
 
