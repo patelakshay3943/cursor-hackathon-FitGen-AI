@@ -1,0 +1,1 @@
+/var/www/html/cursor-hackathon-FitGen-AI/node_modules/@embedded-postgres/linux-x64/native/bin/postgres "-D" "/var/www/html/cursor-hackathon-FitGen-AI/.data/pg" "-p" "5433"

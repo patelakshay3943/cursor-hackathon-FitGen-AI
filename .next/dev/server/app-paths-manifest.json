@@ -1,12 +1,8 @@
 {
   "/api/coach/live/route": "app/api/coach/live/route.js",
-  "/api/coach/summary/route": "app/api/coach/summary/route.js",
-  "/api/exercises/route": "app/api/exercises/route.js",
-  "/api/plans/[id]/days/[n]/complete/route": "app/api/plans/[id]/days/[n]/complete/route.js",
   "/api/plans/[id]/route": "app/api/plans/[id]/route.js",
-  "/exercises/page": "app/exercises/page.js",
-  "/orders/page": "app/orders/page.js",
-  "/page": "app/page.js",
+  "/api/plans/generate/route": "app/api/plans/generate/route.js",
+  "/generate/page": "app/generate/page.js",
   "/plan/[id]/page": "app/plan/[id]/page.js",
   "/track/[exerciseId]/page": "app/track/[exerciseId]/page.js"
 }
